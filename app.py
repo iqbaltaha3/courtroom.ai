@@ -1,6 +1,7 @@
 import streamlit as st
 from graph.graph import court_graph
 from datetime import datetime
+import io
 
 # ============================================
 # PAGE CONFIG
@@ -421,25 +422,67 @@ st.markdown("""
 with st.container():
     col_input1, col_input2 = st.columns([3, 1])
     with col_input1:
+        # Complaint text area
         complaint = st.text_area(
             "Complaint",
-            height=100,
+            height=120,
             placeholder="Enter the case brief / complaint details here...",
             key="complaint_input",
             disabled=st.session_state.case_state["is_running"],
             label_visibility="collapsed"
         )
+
+        # File uploader (below the text area)
+        uploaded_file = st.file_uploader(
+            "Or upload a complaint file (.txt, .pdf)",
+            type=['txt', 'pdf'],
+            key="complaint_uploader",
+            disabled=st.session_state.case_state["is_running"],
+            label_visibility="visible"
+        )
+
+        if uploaded_file is not None:
+            try:
+                # Determine file type and extract text
+                file_type = uploaded_file.type
+                text = ""
+                if file_type == "text/plain":
+                    text = uploaded_file.getvalue().decode("utf-8")
+                elif file_type == "application/pdf":
+                    try:
+                        from pypdf import PdfReader
+                        reader = PdfReader(uploaded_file)
+                        for page in reader.pages:
+                            page_text = page.extract_text()
+                            if page_text:
+                                text += page_text + "\n"
+                    except ImportError:
+                        st.error("The 'pypdf' library is required for PDF uploads. Please install it with: pip install pypdf")
+                        text = ""
+                else:
+                    st.warning("Unsupported file type. Please upload .txt or .pdf.")
+                    text = ""
+
+                if text:
+                    # Update the text area's session state value
+                    st.session_state.complaint_input = text
+                    st.rerun()
+            except Exception as e:
+                st.error(f"Error reading file: {e}")
+
     with col_input2:
         st.write("")
         st.write("")
         if st.button("⚖️ Begin Simulation", type="primary", use_container_width=True):
-            if not complaint.strip():
-                st.warning("Please enter a complaint.")
+            # Use the current value from the text area (session_state.complaint_input)
+            current_complaint = st.session_state.get("complaint_input", "")
+            if not current_complaint.strip():
+                st.warning("Please enter a complaint or upload a file.")
                 st.stop()
 
             # Reset state
             st.session_state.case_state = {
-                "complaint": complaint,
+                "complaint": current_complaint,
                 "entities": None,
                 "accused": None,
                 "victim": None,
