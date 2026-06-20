@@ -2,6 +2,9 @@ import streamlit as st
 from graph.graph import court_graph
 from datetime import datetime
 import io
+import textwrap
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 # ============================================
 # PAGE CONFIG
@@ -468,6 +471,161 @@ def esc(text) -> str:
     if text is None:
         return ""
     return _html_module.escape(str(text))
+
+
+def _build_report_content(state: dict) -> str:
+    report_lines = []
+    report_lines.append("# ⚖️ Courtroom AI Simulation Report")
+    report_lines.append(f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    report_lines.append("")
+    report_lines.append("## 📋 Case Brief")
+    report_lines.append(state.get("complaint", "Not provided."))
+    report_lines.append("")
+
+    report_lines.append("## 📂 Case Manager")
+    ci = state.get("case_intake")
+    if ci:
+        report_lines.append(f"- **Accused:** {ci.get('accused', 'Unknown')}")
+        report_lines.append(f"- **Victim:** {ci.get('victim', 'Unknown')}")
+        report_lines.append(f"- **Offences:** {ci.get('offences', 'Unknown')}")
+        report_lines.append(f"- **Allegation:** {ci.get('allegation', 'Unknown')}")
+        report_lines.append(f"- **Jurisdiction:** {ci.get('jurisdiction', 'Unknown')}")
+        facts_list = ci.get("facts") or []
+        if facts_list:
+            report_lines.append("- **Facts:**")
+            for f in facts_list:
+                report_lines.append(f"  - {f}")
+        missing_list = ci.get("missing_information") or []
+        if missing_list:
+            report_lines.append("- **Missing Information:**")
+            for m in missing_list:
+                report_lines.append(f"  - {m}")
+    else:
+        report_lines.append(f"- **Accused:** {state.get('accused', 'Unknown')}")
+        report_lines.append(f"- **Victim:** {state.get('victim', 'Unknown')}")
+        report_lines.append(f"- **Offence:** {state.get('offence', 'Unknown')}")
+        report_lines.append(f"- **Facts:** {state.get('facts', 'Unknown')}")
+    report_lines.append("")
+
+    report_lines.append("## 📚 Legal Research")
+    lr = state.get("legal_research")
+    if lr:
+        sections = lr.get("applicable_sections") or []
+        for sec in sections:
+            report_lines.append(f"- **{sec.get('section')} | {sec.get('act')}** — {sec.get('relevance')}")
+        precedents = lr.get("precedents") or []
+        if precedents:
+            report_lines.append("- **Precedents:**")
+            for p in precedents:
+                report_lines.append(f"  - {p.get('case_name')} ({p.get('court')}, {p.get('year')}) — {p.get('relevance')}")
+        evidentiary_notes = lr.get("evidentiary_notes") or []
+        if evidentiary_notes:
+            report_lines.append("- **Evidentiary Notes:**")
+            for n in evidentiary_notes:
+                report_lines.append(f"  - {n}")
+    else:
+        report_lines.append(f"- **Laws:** {state.get('laws', 'Not specified')}")
+        report_lines.append(f"- **Sections Applied:** {state.get('sections_applied', 'Not specified')}")
+        report_lines.append(f"- **Precedents:** {state.get('precedents', 'Not specified')}")
+    report_lines.append("")
+
+    report_lines.append("## 🧭 Consultant")
+    report_lines.append(state.get('consultant', 'Not available.') or 'Not available.')
+    report_lines.append("")
+
+    report_lines.append("## ⚔️ Prosecution Round 1")
+    report_lines.append(state.get('pros_r1', 'Not available.') or 'Not available.')
+    report_lines.append("")
+
+    report_lines.append("## 🛡️ Defense Round 1")
+    report_lines.append(state.get('def_r1', 'Not available.') or 'Not available.')
+    report_lines.append("")
+
+    report_lines.append("## ⚔️ Prosecution Round 2")
+    report_lines.append(state.get('pros_r2', 'Not available.') or 'Not available.')
+    report_lines.append("")
+
+    report_lines.append("## 🛡️ Defense Round 2")
+    report_lines.append(state.get('def_r2', 'Not available.') or 'Not available.')
+    report_lines.append("")
+
+    report_lines.append("## 👨‍⚖️ Judge")
+    jv = state.get("judge_verdict")
+    if jv:
+        report_lines.append(f"- **Verdict:** {jv.get('verdict', 'Unknown')}")
+        report_lines.append(f"- **Confidence:** {jv.get('confidence', 'N/A')}%")
+        report_lines.append(f"- **Findings:** {jv.get('findings', '')}")
+        report_lines.append(f"- **Prosecution Assessment:** {jv.get('prosecution_assessment', '')}")
+        report_lines.append(f"- **Defense Assessment:** {jv.get('defense_assessment', '')}")
+        report_lines.append(f"- **Reasoning:** {jv.get('reasoning', '')}")
+        sections_applied_list = jv.get("sections_applied") or []
+        report_lines.append(f"- **Sections Applied:** {', '.join(sections_applied_list)}")
+        report_lines.append(f"- **Probable Punishment:** {jv.get('probable_punishment', '')}")
+    else:
+        report_lines.append(f"- **Verdict Short:** {state.get('verdict_short', 'Unknown')}")
+        report_lines.append(f"- **Confidence:** {state.get('confidence', 'N/A')}%")
+        report_lines.append(f"- **Full Verdict:**\n{state.get('verdict', 'Not available.')}")
+    report_lines.append("")
+
+    report_lines.append("## 📰 Reporter")
+    report_lines.append(f"- **Headline:** {state.get('headline', 'No headline.')}")
+    report_lines.append(f"- **Report:**\n{state.get('report', 'Not available.')}")
+    report_lines.append("")
+
+    return "\n".join(report_lines)
+
+
+def _build_pdf_bytes(report_text: str) -> bytes:
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+    left = 50
+    top = height - 50
+    line_height = 12
+
+    def draw_wrapped(text: str, x: int, y: int, font_name: str = "Helvetica", font_size: int = 10):
+        nonlocal top
+        c.setFont(font_name, font_size)
+        text = text.replace("**", "")
+        for raw_line in text.split("\n"):
+            if y < 50:
+                c.showPage()
+                c.setFont(font_name, font_size)
+                y = height - 50
+            if not raw_line.strip():
+                y -= line_height
+                continue
+            wrapped = textwrap.wrap(raw_line, width=110)
+            for chunk in wrapped:
+                if y < 50:
+                    c.showPage()
+                    c.setFont(font_name, font_size)
+                    y = height - 50
+                c.drawString(x, y, chunk)
+                y -= line_height
+        return y
+
+    y = top
+    for line in report_text.splitlines():
+        if y < 50:
+            c.showPage()
+            y = height - 50
+        if line.startswith("# "):
+            y = draw_wrapped(line[2:], left, y, font_name="Helvetica-Bold", font_size=16)
+            y -= 6
+        elif line.startswith("## "):
+            y = draw_wrapped(line[3:], left, y, font_name="Helvetica-Bold", font_size=12)
+            y -= 4
+        elif line.startswith("- **"):
+            y = draw_wrapped(line[2:].replace("- **", "").replace("**", ""), left + 6, y)
+        elif line.startswith("  - "):
+            y = draw_wrapped(line[4:], left + 18, y)
+        elif line.startswith("- "):
+            y = draw_wrapped(line[2:], left + 6, y)
+        else:
+            y = draw_wrapped(line, left, y)
+    c.save()
+    return buffer.getvalue()
 
 
 # ============================================
@@ -1056,121 +1214,28 @@ if st.session_state.simulation_complete:
     st.markdown('<div class="gold-divider"></div>', unsafe_allow_html=True)
 
     # ---- DOWNLOAD REPORT ----
-    # Build a formatted Markdown report from the state. Prefer the
-    # structured dicts when available (richer / cleaner), fall back to
-    # the flattened text fields otherwise.
     s = st.session_state.case_state
-    report_lines = []
-    report_lines.append("# ⚖️ Courtroom AI Simulation Report")
-    report_lines.append(f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    report_lines.append("")
-    report_lines.append("## 📋 Case Brief")
-    report_lines.append(s.get("complaint", "Not provided."))
-    report_lines.append("")
-
-    report_lines.append("## 📂 Case Manager")
-    ci = s.get("case_intake")
-    if ci:
-        report_lines.append(f"- **Accused:** {ci.get('accused', 'Unknown')}")
-        report_lines.append(f"- **Victim:** {ci.get('victim', 'Unknown')}")
-        report_lines.append(f"- **Offences:** {ci.get('offences', 'Unknown')}")
-        report_lines.append(f"- **Allegation:** {ci.get('allegation', 'Unknown')}")
-        report_lines.append(f"- **Jurisdiction:** {ci.get('jurisdiction', 'Unknown')}")
-        facts_list = ci.get("facts") or []
-        if facts_list:
-            report_lines.append("- **Facts:**")
-            for f in facts_list:
-                report_lines.append(f"  - {f}")
-        missing_list = ci.get("missing_information") or []
-        if missing_list:
-            report_lines.append("- **Missing Information:**")
-            for m in missing_list:
-                report_lines.append(f"  - {m}")
-    else:
-        report_lines.append(f"- **Accused:** {s.get('accused', 'Unknown')}")
-        report_lines.append(f"- **Victim:** {s.get('victim', 'Unknown')}")
-        report_lines.append(f"- **Offence:** {s.get('offence', 'Unknown')}")
-        report_lines.append(f"- **Facts:** {s.get('facts', 'Unknown')}")
-    report_lines.append("")
-
-    report_lines.append("## 📚 Legal Research")
-    lr = s.get("legal_research")
-    if lr:
-        sections = lr.get("applicable_sections") or []
-        for sec in sections:
-            report_lines.append(f"- **{sec.get('section')} | {sec.get('act')}** — {sec.get('relevance')}")
-        precedents = lr.get("precedents") or []
-        if precedents:
-            report_lines.append("- **Precedents:**")
-            for p in precedents:
-                report_lines.append(f"  - {p.get('case_name')} ({p.get('court')}, {p.get('year')}) — {p.get('relevance')}")
-        evidentiary_notes = lr.get("evidentiary_notes") or []
-        if evidentiary_notes:
-            report_lines.append("- **Evidentiary Notes:**")
-            for n in evidentiary_notes:
-                report_lines.append(f"  - {n}")
-    else:
-        report_lines.append(f"- **Laws:** {s.get('laws', 'Not specified')}")
-        report_lines.append(f"- **Sections Applied:** {s.get('sections_applied', 'Not specified')}")
-        report_lines.append(f"- **Precedents:** {s.get('precedents', 'Not specified')}")
-    report_lines.append("")
-
-    report_lines.append("## 🧭 Consultant")
-    report_lines.append(s.get('consultant', 'Not available.') or 'Not available.')
-    report_lines.append("")
-
-    report_lines.append("## ⚔️ Prosecution Round 1")
-    report_lines.append(s.get('pros_r1', 'Not available.') or 'Not available.')
-    report_lines.append("")
-
-    report_lines.append("## 🛡️ Defense Round 1")
-    report_lines.append(s.get('def_r1', 'Not available.') or 'Not available.')
-    report_lines.append("")
-
-    report_lines.append("## ⚔️ Prosecution Round 2")
-    report_lines.append(s.get('pros_r2', 'Not available.') or 'Not available.')
-    report_lines.append("")
-
-    report_lines.append("## 🛡️ Defense Round 2")
-    report_lines.append(s.get('def_r2', 'Not available.') or 'Not available.')
-    report_lines.append("")
-
-    report_lines.append("## 👨‍⚖️ Judge")
-    jv = s.get("judge_verdict")
-    if jv:
-        report_lines.append(f"- **Verdict:** {jv.get('verdict', 'Unknown')}")
-        report_lines.append(f"- **Confidence:** {jv.get('confidence', 'N/A')}%")
-        report_lines.append(f"- **Findings:** {jv.get('findings', '')}")
-        report_lines.append(f"- **Prosecution Assessment:** {jv.get('prosecution_assessment', '')}")
-        report_lines.append(f"- **Defense Assessment:** {jv.get('defense_assessment', '')}")
-        report_lines.append(f"- **Reasoning:** {jv.get('reasoning', '')}")
-        sections_applied_list = jv.get("sections_applied") or []
-        report_lines.append(f"- **Sections Applied:** {', '.join(sections_applied_list)}")
-        report_lines.append(f"- **Probable Punishment:** {jv.get('probable_punishment', '')}")
-    else:
-        report_lines.append(f"- **Verdict Short:** {s.get('verdict_short', 'Unknown')}")
-        report_lines.append(f"- **Confidence:** {s.get('confidence', 'N/A')}%")
-        report_lines.append(f"- **Full Verdict:**\n{s.get('verdict', 'Not available.')}")
-    report_lines.append("")
-
-    report_lines.append("## 📰 Reporter")
-    report_lines.append(f"- **Headline:** {s.get('headline', 'No headline.')}")
-    report_lines.append(f"- **Report:**\n{s.get('report', 'Not available.')}")
-    report_lines.append("")
-
-    report_content = "\n".join(report_lines)
+    report_content = _build_report_content(s)
 
     # ---- Buttons ----
-    col_btn1, col_btn2 = st.columns(2)
+    col_btn1, col_btn2, col_btn3 = st.columns(3)
     with col_btn1:
         st.download_button(
-            label="📥 Download Report (Markdown)",
+            label="📄 Download PDF",
+            data=_build_pdf_bytes(report_content),
+            file_name="courtroom_report.pdf",
+            mime="application/pdf",
+            use_container_width=True,
+        )
+    with col_btn2:
+        st.download_button(
+            label="📥 Download Markdown",
             data=report_content,
             file_name="courtroom_report.md",
             mime="text/markdown",
             use_container_width=True,
         )
-    with col_btn2:
+    with col_btn3:
         if st.button("🔄 Start New Case", use_container_width=True):
             st.session_state.case_state = dict(EMPTY_CASE_STATE)
             st.session_state.simulation_complete = False
