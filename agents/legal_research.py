@@ -1,4 +1,5 @@
-from agents import call_claude
+from agents import call_structured
+from agents.schemas import LegalResearch
 from graph.state import CourtState
 
 SYSTEM = """
@@ -71,47 +72,18 @@ For every legal issue:
 
 PRECEDENT ANALYSIS
 
-When citing a precedent:
-
-• State the case name.
-• State the Court.
-• State the year.
-• Summarise the legal principle established.
-• Explain its relevance to the present facts.
-
-Do not merely list authorities.
-
-Explain why they matter.
+When citing a precedent, state the case name, the court, the year, the legal
+principle established, and its relevance to the present facts. Do not merely
+list authorities — explain why they matter.
 
 EVIDENTIARY ANALYSIS
 
-Where evidence is relevant:
-
-• Identify the applicable provisions of the Bharatiya Sakshya Adhiniyam.
-
-• Distinguish admissibility from evidentiary weight.
-
-• Note what evidence would be required to establish the legal ingredients of an offence or claim.
-
-• Identify evidentiary gaps.
+Where evidence is relevant, identify the applicable provisions of the
+Bharatiya Sakshya Adhiniyam, distinguish admissibility from evidentiary
+weight, note what evidence would be required to establish the legal
+ingredients of an offence or claim, and identify evidentiary gaps.
 
 Identify ONLY laws that are plausibly applicable.
-
-Output in EXACT format:
-
-APPLICABLE SECTIONS:
-1. Section Number | Act Name
-   Relevance: ...
-
-2. Section Number | Act Name
-   Relevance: ...
-
-PRECEDENTS:
-1. Case Name | Court | Year
-   Relevance: ...
-
-2. Case Name | Court | Year
-   Relevance: ...
 
 Do not invent facts.
 Do not argue guilt.
@@ -138,45 +110,55 @@ Facts:
 {state['facts']}
 """
 
-    response = call_claude(SYSTEM, user)
+    result: LegalResearch = call_structured(SYSTEM, user, LegalResearch)
 
-    sections = []
-    precedents = []
+    # ── Reconstruct readable text blocks ────────────────────────────
+    # Downstream agents (prosecutor, defense, judge) interpolate
+    # state['laws'] directly into their own prompts as prose, and app.py
+    # displays it as a text block — so we rebuild a clean formatted
+    # version from the structured data rather than changing every
+    # consumer's prompt/UI code.
 
-    mode = None
+    sections_lines = []
+    for i, s in enumerate(result.applicable_sections, 1):
+        sections_lines.append(f"{i}. {s.section} | {s.act}\n   Relevance: {s.relevance}")
+    sections_text = "\n\n".join(sections_lines) if sections_lines else "None identified."
 
-    for line in response.splitlines():
-        l = line.strip()
+    precedents_lines = []
+    for i, p in enumerate(result.precedents, 1):
+        precedents_lines.append(f"{i}. {p.case_name} | {p.court} | {p.year}\n   Relevance: {p.relevance}")
+    precedents_text = "\n\n".join(precedents_lines) if precedents_lines else "None identified."
 
-        if l.upper().startswith("APPLICABLE SECTIONS"):
-            mode = "sections"
-            continue
+    evidentiary_text = (
+        "\n".join(f"- {n}" for n in result.evidentiary_notes)
+        if result.evidentiary_notes else "None noted."
+    )
+    unsettled_text = (
+        "\n".join(f"- {q}" for q in result.unsettled_questions)
+        if result.unsettled_questions else "None noted."
+    )
 
-        if l.upper().startswith("PRECEDENTS"):
-            mode = "precedents"
-            continue
+    full_text = f"""APPLICABLE SECTIONS:
+{sections_text}
 
-        if not l:
-            continue
+PRECEDENTS:
+{precedents_text}
 
-        if (
-            mode == "sections"
-            and len(l) > 2
-            and l[0].isdigit()
-            and l[1] == "."
-        ):
-            sections.append(l)
+EVIDENTIARY NOTES:
+{evidentiary_text}
 
-        elif (
-            mode == "precedents"
-            and len(l) > 2
-            and l[0].isdigit()
-            and l[1] == "."
-        ):
-            precedents.append(l)
+UNSETTLED QUESTIONS:
+{unsettled_text}"""
+
+    # Compact one-line-per-item versions for the sections_applied /
+    # precedents fields, matching what app.py expects to display.
+    sections_compact = "; ".join(f"{s.section}, {s.act}" for s in result.applicable_sections) or "Unknown"
+    precedents_compact = "; ".join(
+        f"{p.case_name} ({p.court}, {p.year})" for p in result.precedents
+    ) or "Unknown"
 
     return {
-        "laws": response,
-        "sections_applied": "\n".join(sections) if sections else "Unknown",
-        "precedents": "\n".join(precedents) if precedents else "Unknown",
+        "laws": full_text,
+        "sections_applied": sections_compact,
+        "precedents": precedents_compact,
     }

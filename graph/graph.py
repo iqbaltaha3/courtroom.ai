@@ -1,12 +1,13 @@
 from langgraph.graph import StateGraph, END
 
 from graph.state import CourtState
-from agents.case_manager  import run_case_manager
-from agents.legal_research import run_legal_research
-from agents.prosecutor    import run_prosecutor_r1, run_prosecutor_r2
-from agents.defense       import run_defense_r1,   run_defense_r2
-from agents.judge         import run_judge
-from agents.reporter      import run_reporter
+from agents.case_manager   import run_case_manager
+from agents.legal_research  import run_legal_research
+from agents.consultant      import run_consultant
+from agents.prosecutor      import run_prosecutor_r1, run_prosecutor_r2
+from agents.defense         import run_defense_r1,   run_defense_r2
+from agents.judge           import run_judge
+from agents.reporter        import run_reporter
 
 
 def build_graph() -> StateGraph:
@@ -15,6 +16,7 @@ def build_graph() -> StateGraph:
     # ── Register nodes ──────────────────────────────────
     g.add_node("case_manager",   run_case_manager)
     g.add_node("legal_research", run_legal_research)
+    g.add_node("consultant",     run_consultant)
     g.add_node("prosecutor_r1",  run_prosecutor_r1)
     g.add_node("defense_r1",     run_defense_r1)
     g.add_node("prosecutor_r2",  run_prosecutor_r2)
@@ -25,7 +27,8 @@ def build_graph() -> StateGraph:
     # ── Sequential edges ────────────────────────────────
     g.set_entry_point("case_manager")
     g.add_edge("case_manager",   "legal_research")
-    g.add_edge("legal_research", "prosecutor_r1")
+    g.add_edge("legal_research", "consultant")
+    g.add_edge("consultant",     "prosecutor_r1")
     g.add_edge("prosecutor_r1",  "defense_r1")
     g.add_edge("defense_r1",     "prosecutor_r2")
     g.add_edge("prosecutor_r2",  "defense_r2")

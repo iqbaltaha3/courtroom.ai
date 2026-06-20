@@ -72,12 +72,13 @@ python -m pytest
 The graph runs in this order:
 1. `case_manager`
 2. `legal_research`
-3. `prosecutor_r1`
-4. `defense_r1`
-5. `prosecutor_r2`
-6. `defense_r2`
-7. `judge`
-8. `reporter`
+3. `consultant`
+4. `prosecutor_r1`
+5. `defense_r1`
+6. `prosecutor_r2`
+7. `defense_r2`
+8. `judge`
+9. `reporter`
 
 Each stage updates the shared state used by the next stage.
 

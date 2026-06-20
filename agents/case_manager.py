@@ -1,4 +1,5 @@
-from agents import call_claude
+from agents import call_structured
+from agents.schemas import CaseIntake
 from graph.state import CourtState
 
 SYSTEM = """
@@ -94,46 +95,34 @@ For every complaint:
 When facts are uncertain, label them as allegations.
 
 Never present allegations as established facts.
-
-Extract information in EXACT format:
-
-ACCUSED: ...
-VICTIM: ...
-ALLEGATION: ...
-OFFENCES: ...
-JURISDICTION: ...
-
-FACTS:
-- ...
-- ...
-- ...
-- ...
-
-Do not deviate from this format.
 """
 
 
 def run_case_manager(state: CourtState) -> dict:
-    response = call_claude(SYSTEM, f"Complaint:\n{state['complaint']}")
-
-    # Quick parse for accused / offence fields (best-effort, one line each)
-    accused = next(
-        (l.split(":", 1)[1].strip() for l in response.splitlines()
-         if "accused" in l.lower()), "Unknown"
-    )
-    offence = next(
-        (l.split(":", 1)[1].strip() for l in response.splitlines()
-         if "offence" in l.lower() or "allegation" in l.lower()), "Unknown"
+    result: CaseIntake = call_structured(
+        SYSTEM, f"Complaint:\n{state['complaint']}", CaseIntake
     )
 
-    victim = next(
-        (l.split(":", 1)[1].strip() for l in response.splitlines()
-         if "victim" in l.lower() or "complainant" in l.lower()), "Unknown"
-    )
+    # Reconstruct a readable full-text summary for display
+    facts_block = "\n".join(f"- {f}" for f in result.facts) or "- None stated"
+    missing_block = "\n".join(f"- {m}" for m in result.missing_information) or "- None noted"
 
-    facts = next(
-        (l.split(":", 1)[1].strip() for l in response.splitlines()
-         if "fact" in l.lower()), "Unknown"
-    )
+    entities_text = f"""ACCUSED: {result.accused}
+VICTIM: {result.victim}
+ALLEGATION: {result.allegation}
+OFFENCES: {result.offences}
+JURISDICTION: {result.jurisdiction}
 
-    return {"entities": response, "accused": accused, "offence": offence, "victim": victim, "facts": facts}
+FACTS:
+{facts_block}
+
+MISSING INFORMATION:
+{missing_block}"""
+
+    return {
+        "entities": entities_text,
+        "accused": result.accused,
+        "offence": result.offences,
+        "victim": result.victim,
+        "facts": "; ".join(result.facts) if result.facts else "Unknown",
+    }

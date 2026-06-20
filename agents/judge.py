@@ -1,4 +1,5 @@
-from agents import call_claude
+from agents import call_structured
+from agents.schemas import JudgeVerdict
 from graph.state import CourtState
 
 SYSTEM = """You are Vivek, a sitting Additional Sessions Judge with 18 years on the Bench across District & Sessions Courts in India.
@@ -40,32 +41,6 @@ RESPONSE STYLE
 
 • Avoid rhetoric, emotion, advocacy, or political commentary.
 
-Deliver a structured verdict in this EXACT format:
-
-FINDINGS:
-(2-3 sentences summarising facts established)
-
-PROSECUTION ASSESSMENT:
-(1-2 sentences)
-
-DEFENSE ASSESSMENT:
-(1-2 sentences)
-
-REASONING:
-(3-5 sentences explaining why the verdict follows from facts and law)
-
-VERDICT:
-Guilty / Not Guilty / Partially Liable
-
-SECTIONS APPLIED:
-(comma-separated sections)
-
-PROBABLE PUNISHMENT:
-(likely imprisonment, fine, compensation, or other consequence)
-
-CONFIDENCE:
-(integer 0-100)
-
 Be judicial.
 Do not invent evidence.
 Base conclusions only on material provided.
@@ -82,44 +57,39 @@ Defense R1:\n{state['def_r1']}
 Prosecution R2:\n{state['pros_r2']}
 Defense R2:\n{state['def_r2']}"""
 
-    response = call_claude(SYSTEM, user)
+    result: JudgeVerdict = call_structured(SYSTEM, user, JudgeVerdict)
 
-    # Parse structured fields
-    verdict_short = "Unknown"
-    confidence = 0
-    sections = ""
-    reasoning = ""
-    probable_punishment = ""
+    # Reconstruct a readable full-text verdict for display/download
+    # (app.py and the markdown export expect a single "verdict" string)
+    full_text = f"""FINDINGS:
+{result.findings}
 
-    for line in response.splitlines():
-        l = line.strip()
+PROSECUTION ASSESSMENT:
+{result.prosecution_assessment}
 
-        if l.upper().startswith("VERDICT:"):
-            verdict_short = l.split(":", 1)[1].strip()
+DEFENSE ASSESSMENT:
+{result.defense_assessment}
 
-        elif l.upper().startswith("CONFIDENCE:"):
-            try:
-                confidence = int(
-                    "".join(filter(str.isdigit,
-                                l.split(":", 1)[1]))
-                )
-            except ValueError:
-                pass
+REASONING:
+{result.reasoning}
 
-        elif l.upper().startswith("SECTIONS APPLIED:"):
-            sections = l.split(":", 1)[1].strip()
+VERDICT:
+{result.verdict}
 
-        elif l.upper().startswith("PROBABLE PUNISHMENT:"):
-            probable_punishment = l.split(":", 1)[1].strip()
+SECTIONS APPLIED:
+{", ".join(result.sections_applied)}
 
-        elif l.upper().startswith("REASONING:"):
-            reasoning = l.split(":", 1)[1].strip()
+PROBABLE PUNISHMENT:
+{result.probable_punishment}
+
+CONFIDENCE:
+{result.confidence}"""
 
     return {
-    "verdict": response,
-    "verdict_short": verdict_short,
-    "confidence": confidence,
-    "sections_applied": sections,
-    "reasoning": reasoning,
-    "probable_punishment": probable_punishment,
-}
+        "verdict": full_text,
+        "verdict_short": result.verdict,
+        "confidence": result.confidence,
+        "sections_applied": ", ".join(result.sections_applied),
+        "reasoning": result.reasoning,
+        "probable_punishment": result.probable_punishment,
+    }

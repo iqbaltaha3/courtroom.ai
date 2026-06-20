@@ -20,6 +20,7 @@ The Supreme Court of India, in its unanimous 5-judge Constitution Bench judgment
 NODE_OUTPUT_KEY = {
     "case_manager":   "entities",
     "legal_research": "laws",
+    "consultant":     "consultant",
     "prosecutor_r1":  "pros_r1",
     "defense_r1":     "def_r1",
     "prosecutor_r2":  "pros_r2",
@@ -44,6 +45,7 @@ def main():
         "complaint": SAMPLE_COMPLAINT,
         "entities": None, "accused": None, "offence": None,
         "laws": None,
+        "consultant": None,
         "pros_r1": None, "def_r1": None,
         "pros_r2": None, "def_r2": None,
         "verdict": None, "verdict_short": None,

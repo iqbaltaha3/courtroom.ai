@@ -6,32 +6,38 @@ class CourtState(TypedDict):
     complaint: str
 
     # ── Agent 1: Case Manager ──────────────────────────
-    entities: Optional[str]        # accused, victim, offence, key facts
+    entities: Optional[str]        # flattened text (for export/back-compat)
     accused: Optional[str]
     offence: Optional[str]
     victim: Optional[str]
-    facts: Optional[str]
+    facts: Optional[str]           # flattened "; "-joined string
+    case_intake: Optional[dict]    # CaseIntake.model_dump() — structured, use this in UI
 
     # ── Agent 2: Legal Research ────────────────────────
-    laws: Optional[str]
+    laws: Optional[str]            # flattened text (for export/back-compat)
     sections_applied: Optional[str]
-    precedents: Optional[str]           # applicable sections + precedents
+    precedents: Optional[str]
+    legal_research: Optional[dict]  # LegalResearch.model_dump() — structured, use this in UI
 
-    # ── Agent 3 & 4: Round 1 ──────────────────────────
+    # ── Agent 3: Consultant ─────────────────────────────
+    consultant: Optional[str]      # neutral advisory note for strategy/evidence
+
+    # ── Agent 4 & 5: Round 1 ──────────────────────────
     pros_r1: Optional[str]
     def_r1: Optional[str]
 
-    # ── Agent 3 & 4: Round 2 ──────────────────────────
+    # ── Agent 6 & 7: Round 2 ──────────────────────────
     pros_r2: Optional[str]
     def_r2: Optional[str]
 
-    # ── Agent 5: Judge ─────────────────────────────────
-    verdict: Optional[str]         # full verdict text
+    # ── Agent 8: Judge ─────────────────────────────────
+    verdict: Optional[str]         # flattened full verdict text (for export/back-compat)
     verdict_short: Optional[str]   # Guilty / Not Guilty / Partial
     confidence: Optional[int]      # 0-100
-    sections_applied: Optional[str]
+    reasoning: Optional[str]
     probable_punishment: Optional[str]
+    judge_verdict: Optional[dict]  # JudgeVerdict.model_dump() — structured, use this in UI
 
-    # ── Agent 6: Reporter ──────────────────────────────
+    # ── Agent 9: Reporter ──────────────────────────────
     headline: Optional[str]
     report: Optional[str]          # journalistic summary
