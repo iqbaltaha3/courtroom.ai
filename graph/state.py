@@ -19,8 +19,11 @@ class CourtState(TypedDict):
     precedents: Optional[str]
     legal_research: Optional[dict]  # LegalResearch.model_dump() — structured, use this in UI
 
-    # ── Agent 3: Consultant ─────────────────────────────
+    # ── Agent 3: Internal Consultant ───────────────────
     consultant: Optional[str]      # neutral advisory note for strategy/evidence
+
+    # ── Agent 3B: Consultant Sparrow ───────────────────
+    top_consultant: Optional[str]  # independent high-level advisory review
 
     # ── Agent 4 & 5: Round 1 ──────────────────────────
     pros_r1: Optional[str]

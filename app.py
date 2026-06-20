@@ -99,6 +99,15 @@ st.markdown("""
         font-size: 14px;
         font-style: italic;
     }
+    .top-card.consultant-panel {
+        background: linear-gradient(180deg, #111116 0%, #0d0d12 100%);
+        border: 1px solid #3a2d0a;
+        border-top: 3px solid #d4af37;
+        box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.06);
+    }
+    .top-card.consultant-panel h4 {
+        color: #f0cf6d;
+    }
     .top-card .sublabel {
         color: #c9a84c;
         font-size: 11px;
@@ -529,8 +538,11 @@ def _build_report_content(state: dict) -> str:
         report_lines.append(f"- **Precedents:** {state.get('precedents', 'Not specified')}")
     report_lines.append("")
 
-    report_lines.append("## 🧭 Consultant")
+    report_lines.append("## 🧭 Internal Consultant")
     report_lines.append(state.get('consultant', 'Not available.') or 'Not available.')
+    report_lines.append("")
+    report_lines.append("## 🏛️ Top Consultant")
+    report_lines.append(state.get('top_consultant', 'Not available.') or 'Not available.')
     report_lines.append("")
 
     report_lines.append("## ⚔️ Prosecution Round 1")
@@ -644,6 +656,7 @@ EMPTY_CASE_STATE = {
     "precedents": None,
     "legal_research": None,     # structured LegalResearch dict
     "consultant": None,
+    "top_consultant": None,
     "pros_r1": None,
     "def_r1": None,
     "pros_r2": None,
@@ -914,20 +927,21 @@ with col_lr:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------- CONSULTANT ----------
+# ---------- INTERNAL CONSULTANT ----------
 with col_cons:
     st.markdown("""
     <div class="top-card">
-        <h4>🧭 Consultant</h4>
+        <h4>🧭 Internal Consultant</h4>
     """, unsafe_allow_html=True)
 
     consultant = st.session_state.case_state.get("consultant")
     if consultant:
         st.markdown(f'<div class="item"><span class="value">{esc(consultant)}</span></div>', unsafe_allow_html=True)
     else:
-        st.markdown('<div class="empty">Awaiting strategy review...</div>', unsafe_allow_html=True)
+        st.markdown('<div class="empty">Awaiting internal consultant review...</div>', unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
+
 
 
 # ============================================
@@ -1155,6 +1169,26 @@ else:
         <div class="empty">⏳ Preparing the case summary...</div>
     </div>
     """, unsafe_allow_html=True)
+
+# ---------- CONSULTANT SPARROW ----------
+show_consultant_panel = (
+    st.session_state.case_state.get("top_consultant")
+    or st.session_state.simulation_complete
+    or st.session_state.case_state.get("report")
+    or st.session_state.case_state.get("judge_verdict")
+    or st.session_state.case_state.get("is_running")
+)
+if show_consultant_panel:
+    consultant_sparrow = st.session_state.case_state.get("top_consultant")
+    st.markdown("""
+    <div class="top-card consultant-panel" style="margin-top: 1rem;">
+        <h4>🏛️ Consultant Sparrow</h4>
+    """, unsafe_allow_html=True)
+    if consultant_sparrow and str(consultant_sparrow).strip():
+        st.markdown(f'<div class="item"><span class="value">{esc(consultant_sparrow)}</span></div>', unsafe_allow_html=True)
+    else:
+        st.markdown('<div class="empty">⏳ Consultant Sparrow is reviewing the full case...</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ============================================

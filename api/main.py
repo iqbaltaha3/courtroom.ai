@@ -20,13 +20,14 @@ app.add_middleware(
 NODE_LABELS = {
     "case_manager":   ("Case Manager",   "Agent 1"),
     "legal_research": ("Legal Research", "Agent 2"),
-    "consultant":     ("Consultant",     "Agent 3"),
     "prosecutor_r1":  ("Prosecutor",     "Round 1"),
     "defense_r1":     ("Defense Counsel","Round 1"),
     "prosecutor_r2":  ("Prosecutor",     "Round 2"),
     "defense_r2":     ("Defense Counsel","Round 2"),
     "judge":          ("Judge",          "Agent 8"),
     "reporter":       ("Court Reporter", "Agent 9"),
+    "consultant":     ("Internal Consultant", "Simulation Review"),
+    "top_consultant": ("Consultant Sparrow", "Executive Advisory"),
 }
 
 # Map node name → which state key holds its output (used for the SSE
@@ -35,6 +36,7 @@ NODE_OUTPUT_KEY = {
     "case_manager":   "entities",
     "legal_research": "laws",
     "consultant":     "consultant",
+    "top_consultant": "top_consultant",
     "prosecutor_r1":  "pros_r1",
     "defense_r1":     "def_r1",
     "prosecutor_r2":  "pros_r2",
@@ -61,6 +63,7 @@ def _empty_state(complaint: str) -> dict:
         "laws": None, "sections_applied": None, "precedents": None,
         "legal_research": None,
         "consultant": None,
+        "top_consultant": None,
         "pros_r1": None, "def_r1": None,
         "pros_r2": None, "def_r2": None,
         "verdict": None, "verdict_short": None,
