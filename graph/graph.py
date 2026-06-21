@@ -29,14 +29,14 @@ def build_graph() -> StateGraph:
     # ── Sequential edges ────────────────────────────────
     g.set_entry_point("case_manager")
     g.add_edge("case_manager",   "legal_research")
-    g.add_edge("legal_research", "prosecutor_r1")
+    g.add_edge("legal_research", "consultant")
+    g.add_edge("consultant",     "prosecutor_r1")
     g.add_edge("prosecutor_r1",  "defense_r1")
     g.add_edge("defense_r1",     "prosecutor_r2")
     g.add_edge("prosecutor_r2",  "defense_r2")
     g.add_edge("defense_r2",     "judge")
     g.add_edge("judge",          "reporter")
-    g.add_edge("reporter",       "consultant")
-    g.add_edge("consultant",     "top_consultant")
+    g.add_edge("reporter",       "top_consultant")
     g.add_edge("top_consultant", END)
 
     return g.compile()
