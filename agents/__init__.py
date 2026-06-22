@@ -2,7 +2,7 @@ import ollama
 from pydantic import BaseModel
 from typing import Type, TypeVar
 
-MODEL = "gemma3:12b"
+MODEL = "qwen3:8b"
 
 T = TypeVar("T", bound=BaseModel)
 
