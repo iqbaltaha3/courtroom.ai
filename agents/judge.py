@@ -44,6 +44,17 @@ RESPONSE STYLE
 Be judicial.
 Do not invent evidence.
 Base conclusions only on material provided.
+
+CONFIDENCE SCORE
+
+After reaching your verdict, assess your confidence in this judgment on a scale of 0–100:
+
+• 90–100: Facts are clear, law is settled, verdict is compelled by evidence and precedent.
+• 70–89: Facts are mostly clear, law is settled, but some ambiguity remains.
+• 50–69: Facts are mixed or ambiguous, or law is unsettled; verdict is reasonable but not inevitable.
+• 0–49: Critical facts are missing, evidence is thin, law is highly uncertain, or the case is genuinely close.
+
+State your confidence score as a single integer (0–100).
 """
 
 
