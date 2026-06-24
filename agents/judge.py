@@ -103,4 +103,14 @@ CONFIDENCE:
         "sections_applied": ", ".join(result.sections_applied),
         "reasoning": result.reasoning,
         "probable_punishment": result.probable_punishment,
+        "judge_verdict": {
+            "verdict": result.verdict,
+            "confidence": result.confidence,
+            "findings": result.findings,
+            "prosecution_assessment": result.prosecution_assessment,
+            "defense_assessment": result.defense_assessment,
+            "reasoning": result.reasoning,
+            "sections_applied": result.sections_applied,
+            "probable_punishment": result.probable_punishment,
+        },
     }
