@@ -543,20 +543,6 @@ The evaluation module doesn't judge guilt/innocence; it assesses whether the ver
 
 ---
 
-## Technology Stack & Rationale
-
-### Core Technologies
-
-| Layer | Technology | Why Chosen | Alternatives Rejected |
-|-------|-----------|-----------|----------------------|
-| **State Machine** | LangGraph | Native multi-agent orchestration with streaming | Airflow (overly complex), custom event system (reinvents wheel) |
-| **LLM Provider** | Anthropic Claude | Advanced reasoning, function calling, long context | GPT-4 (cost), Llama (local latency) |
-| **UI** | Streamlit | Rapid prototyping, native session state, minimal boilerplate | Django/React (heavyweight), Gradio (limited) |
-| **API** | FastAPI | Async support, automatic OpenAPI docs, streaming with SSE | Flask (no async), Express.js (wrong language) |
-| **PDF Generation** | ReportLab | Programmatic control, wrapped text handling, no external deps | Weasyprint (heavy), pandoc (shell dependency) |
-| **Visualization** | Plotly | Interactive charts, client-side rendering, no server overhead | Matplotlib (static only), D3.js (overkill) |
-| **Data Export** | Pandas + CSV | Standard format, easy import to Excel/R/Python | Custom JSON (nonstandard), Parquet (over-engineering) |
-
 ### Why LangGraph Over Custom State Machine?
 
 ```
@@ -646,9 +632,6 @@ Hybrid (This Project):
 
 ## Running the System
 
-### Option 1: Streamlit UI (Interactive)
-
-**Best for**: Demonstrations, single-case analysis, learning the system
 
 ```bash
 streamlit run app.py
@@ -683,66 +666,6 @@ User Input
 [Report Generation]
     ├─ PDF download (ReportLab)
     └─ Markdown download (raw text)
-```
-
-### Option 2: FastAPI Server (Batch/Integration)
-
-**Best for**: Production deployment, batch processing, programmatic integration
-
-```bash
-uvicorn api.main:app --host 0.0.0.0 --port 8000
-```
-
-**Endpoints**:
-
-1. **POST /simulate** (blocking):
-   ```json
-   {
-     "complaint": "The accused stole a bicycle...",
-     "model": "claude"
-   }
-   ```
-   Returns: `{ "verdict": "...", "confidence": 85, ... }`
-
-2. **POST /simulate/stream** (streaming):
-   Returns: Server-Sent Events (SSE) stream of node updates
-   ```
-   data: {"node": "case_manager", "partial": {...}}
-   data: {"node": "legal_research", "partial": {...}}
-   ...
-   ```
-
-**Use Case Example**:
-```python
-import requests
-
-response = requests.post(
-    "http://localhost:8000/simulate",
-    json={"complaint": "..."}
-)
-result = response.json()
-print(f"Verdict: {result['verdict_short']}")
-print(f"Confidence: {result['confidence']}%")
-```
-
-### Option 3: Direct Python (Testing/Development)
-
-```python
-from graph.graph import court_graph
-from evaluation.evaluator import SystemEvaluator
-
-complaint = "The accused is charged with theft..."
-
-# Execute graph
-state = {"complaint": complaint}
-final_state = court_graph.invoke(state)
-
-# Evaluate
-evaluator = SystemEvaluator()
-metrics = evaluator.evaluate_case(final_state, execution_times={})
-
-print(f"Verdict: {final_state['verdict_short']}")
-print(f"Quality: {metrics.overall_quality_score:.1f}/100")
 ```
 
 ---
@@ -842,149 +765,6 @@ CONFIDENCE SCORE (0-100):
 
 ---
 
-## API Reference
-
-### Streamlit Session State
-
-```python
-st.session_state.case_state  # Current CourtState dict
-st.session_state.simulation_complete  # bool: simulation finished?
-st.session_state.stream_iter  # LangGraph streaming iterator
-st.session_state.node_times  # dict: {node_name: execution_time}
-st.session_state.evaluator  # SystemEvaluator instance
-st.session_state.metrics_recorded  # bool: metrics saved?
-```
-
-### LangGraph Streaming
-
-```python
-from graph.graph import court_graph
-
-# Stream mode="updates" returns dict of {node_name: partial_state_update}
-for event in court_graph.stream(initial_state, stream_mode="updates"):
-    for node_name, partial in event.items():
-        print(f"{node_name}: {partial}")
-```
-
-### Evaluation Module
-
-```python
-from evaluation.evaluator import SystemEvaluator
-
-evaluator = SystemEvaluator()
-
-# Evaluate a completed case
-metrics = evaluator.evaluate_case(
-    state=final_state,
-    execution_times=node_times  # dict: {node_name: seconds}
-)
-
-# Access metrics
-print(metrics.overall_quality_score)  # 0-100
-print(metrics.confidence_calibration)  # 0-100
-print(metrics.verdict)  # "Guilty" / "Not Guilty" / "Partially Liable"
-print(metrics.confidence)  # 0-100
-
-# Get recent cases
-recent = evaluator.get_recent_cases(n=10)
-
-# Get summary stats
-summary = evaluator.get_metrics_summary()
-```
-
-### Metrics Dashboard
-
-```python
-from evaluation.dashboard import show_evaluation_dashboard
-
-# In Streamlit context:
-show_evaluation_dashboard()  # Renders interactive dashboard with:
-# - Summary statistics
-# - Quality score trend (line chart)
-# - Component breakdown (bar chart)
-# - Verdict distribution (pie chart)
-# - Execution performance (area chart)
-# - Confidence calibration (dual-axis)
-# - Recent cases table
-# - CSV export button
-```
-
----
-
-## Extending the System
-
-### Adding a New Agent
-
-**Step 1**: Create agent file (`agents/my_agent.py`)
-```python
-from graph.state import CourtState
-
-def run_my_agent(state: CourtState) -> dict:
-    """
-    My agent processes X and produces Y.
-    """
-    input_data = state['some_field']
-    output_data = process(input_data)
-    return {
-        "output_field": output_data,
-        # ... any other fields to update state
-    }
-```
-
-**Step 2**: Register in graph (`graph/graph.py`)
-```python
-g.add_node("my_agent", run_my_agent)
-
-# Insert into sequence:
-g.add_edge("some_previous_agent", "my_agent")
-g.add_edge("my_agent", "next_agent_in_pipeline")
-```
-
-**Step 3**: Update state schema (`graph/state.py`)
-```python
-class CourtState(TypedDict):
-    # ... existing fields ...
-    my_output_field: Optional[str]  # or whatever type
-```
-
-**Step 4**: Test
-```python
-from graph.graph import court_graph
-
-result = court_graph.invoke({"complaint": "test case..."})
-assert result['my_output_field'] is not None
-```
-
----
-
-### Customizing Evaluation Metrics
-
-**To add new metric**:
-
-1. Add evaluation method to `evaluation/evaluator.py`:
-   ```python
-   def _evaluate_new_dimension(self, state: Dict[str, Any]) -> float:
-       """Custom metric (0-100)."""
-       # ... calculation ...
-       return score
-   ```
-
-2. Include in `_calculate_overall_score()` weighting
-
-3. Add to `EvaluationMetrics` dataclass (`evaluation/metrics.py`):
-   ```python
-   @dataclass
-   class EvaluationMetrics:
-       # ... existing ...
-       my_new_metric: float = 0.0
-   ```
-
-4. Visualize in dashboard (`evaluation/dashboard.py`):
-   ```python
-   metrics_df['my_new_metric']  # Add to charts
-   ```
-
----
 
 ### Swapping LLM Providers
 
@@ -1006,29 +786,6 @@ To use Google Gemini:
 
 ---
 
-### Integrating with External Legal Databases
-
-The `legal_research` agent currently uses LLM knowledge. To add real law database:
-
-```python
-# agents/legal_research.py
-def run_legal_research(state: CourtState) -> dict:
-    # Call external API
-    sections = query_law_database(state['complaint'])  # hypothetical
-    precedents = query_precedent_db(state['complaint'])
-    
-    # Return as before
-    return {
-        "legal_research": LegalResearch(
-            applicable_sections=sections,
-            precedents=precedents,
-            ...
-        ).model_dump()
-    }
-```
-
----
-
 ## Glossary
 
 | Term | Meaning |
@@ -1043,44 +800,6 @@ def run_legal_research(state: CourtState) -> dict:
 | **Evaluation Score** | System's 0-100 assessment of verdict quality |
 | **JSONL** | JSON Lines format (one JSON object per line, newline-delimited) |
 | **Precedent Adherence** | Whether verdict cites laws identified by legal research |
-
----
-
-## Troubleshooting
-
-### Issue: Judge verdict is "Not Guilty" but confidence is 0%
-
-**Cause**: `judge_verdict` dict not properly returned from judge agent
-
-**Fix**: Ensure `agents/judge.py` returns:
-```python
-return {
-    "judge_verdict": {
-        "verdict": result.verdict,
-        "confidence": result.confidence,  # <-- must be set
-        ...
-    }
-}
-```
-
----
-
-### Issue: Metrics show quality = 32 for all cases
-
-**Cause**: Evaluation module detecting `judge_verdict = None`, returning zeros for verdict quality
-
-**Fix**: See above; ensure judge agent returns judge_verdict dict
-
----
-
-### Issue: Streamlit stuck at "Court is in session..."
-
-**Cause**: LLM API timeout or network error; stream_iter still trying to fetch next node
-
-**Fix**:
-1. Check internet connection
-2. Verify API key is set: `echo $ANTHROPIC_API_KEY`
-3. Restart Streamlit: `Ctrl+C`, then `streamlit run app.py`
 
 ---
 
@@ -1105,19 +824,7 @@ Typical case analysis (full pipeline):
 - Model temperature & max_tokens (higher = slower)
 - LLM provider latency (varies by region)
 - Network bandwidth
-
----
-
-## Contributing
-
-Contributions welcome! Please:
-
-1. Fork repository
-2. Create feature branch: `git checkout -b feature/your-feature`
-3. Follow code style: Python 3.10+, type hints, docstrings
-4. Test: `python -m pytest tests/`
-5. Submit PR with description
-
+  
 ---
 
 ## License
@@ -1136,4 +843,4 @@ This project is provided as-is for educational and research purposes.
 
 **Last Updated**: June 2026
 
-**Architecture Version**: 2.0 (Multi-agent with evaluation framework)
+**Architecture Version**: 1.0 
