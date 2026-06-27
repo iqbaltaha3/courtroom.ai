@@ -1,13 +1,23 @@
+# Core LLM & Graph Orchestration
 langgraph>=0.2.0
-langchain-anthropic>=0.2.0
-google-generativeai>=0.7.0
+groq>=0.4.0
+pydantic>=2.0
+
+# Web Search Integration
+tavily-python>=0.3.0
+
+# Web Interfaces
+streamlit>=1.28.0
 fastapi>=0.111.0
 uvicorn>=0.30.0
 sse-starlette>=2.1.0
+
+# Configuration & Environment
 python-dotenv>=1.0.0
-groq>=0.4.0
-tavily-python>=0.3.0
-pypdf
-reportlab
+
+# Data & Visualization
 plotly>=5.0.0
 pandas>=2.0.0
+
+# Document Generation (optional, for PDF exports)
+reportlab>=4.0.0
