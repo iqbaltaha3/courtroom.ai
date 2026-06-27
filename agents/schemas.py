@@ -62,11 +62,8 @@ class LegalResearch(BaseModel):
 
 class JudgeVerdict(BaseModel):
     """Structured output for the Judge agent."""
-    findings: str = Field(description="2-3 sentences summarising facts established")
-    prosecution_assessment: str = Field(description="1-2 sentences assessing the prosecution's case")
-    defense_assessment: str = Field(description="1-2 sentences assessing the defense's case")
-    reasoning: str = Field(description="3-5 sentences explaining why the verdict follows from facts and law")
-    verdict: Literal["Guilty", "Not Guilty", "Partially Liable"]
-    sections_applied: list[str] = Field(description="Statutory sections applied, e.g. ['Section 316, BNS']")
-    probable_punishment: str = Field(description="Likely imprisonment, fine, compensation, or other consequence")
-    confidence: int = Field(ge=0, le=100, description="Confidence in this verdict, 0-100")
+    verdict: Literal["Guilty", "Not Guilty", "Partially Liable"] = Field(description="The judge's verdict")
+    reasoning: str = Field(description="The judge's reasoning for the verdict, in natural judicial language")
+    sections_applied: list[str] = Field(default_factory=list, description="Statutory sections applied")
+    probable_punishment: str = Field(default="", description="Likely consequence if guilty (imprisonment, fine, compensation)")
+    confidence: int = Field(ge=0, le=100, description="Confidence level (0-100)")

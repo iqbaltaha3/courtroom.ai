@@ -1,5 +1,6 @@
 from agents import call_structured
 from agents.schemas import LegalResearch
+from agents.web_search import search_applicable_laws, search_legal_precedents, search_evidentiary_requirements
 from graph.state import CourtState
 
 SYSTEM = """
@@ -17,6 +18,8 @@ You possess expert knowledge of:
 • High Court jurisprudence
 • Statutory interpretation
 • Principles of criminal and civil law
+
+You have access to live web search results for current case law, precedents, and statutory interpretations. Use these results as supporting material, but apply your own legal judgment. Verify any citations and ensure they are accurately attributed.
 
 ROLE
 
@@ -58,6 +61,8 @@ RESEARCH PRINCIPLES
 
 • Never invent statutes, sections, precedents, or legal principles.
 
+• Use web search results to enhance accuracy and currency of precedents.
+
 ANALYTICAL APPROACH
 
 For every legal issue:
@@ -65,7 +70,7 @@ For every legal issue:
 1. Identify the issue.
 2. Identify the governing statutory provision.
 3. Explain the legal ingredients or requirements.
-4. Identify relevant judicial precedents.
+4. Identify relevant judicial precedents (from both traditional knowledge and web search results).
 5. Explain the relevance of those precedents.
 6. Note competing interpretations if they exist.
 7. Identify areas requiring further factual development.
@@ -74,7 +79,7 @@ PRECEDENT ANALYSIS
 
 When citing a precedent, state the case name, the court, the year, the legal
 principle established, and its relevance to the present facts. Do not merely
-list authorities — explain why they matter.
+list authorities — explain why they matter. Prioritize recent and binding precedents.
 
 EVIDENTIARY ANALYSIS
 
@@ -93,6 +98,14 @@ Only identify applicable law.
 
 
 def run_legal_research(state: CourtState) -> dict:
+    # Perform web searches to enrich the research with current precedents and laws
+    laws_search = search_applicable_laws(state['offence'], state.get('allegation', ''))
+    precedents_search = search_legal_precedents(
+        " ".join(state['facts'][:2]) if state.get('facts') else state['complaint'],
+        state['offence']
+    )
+    evidence_search = search_evidentiary_requirements(state['offence'], state.get('facts', []))
+    
     user = f"""
 Complaint:
 {state['complaint']}
@@ -108,6 +121,20 @@ Alleged Offence:
 
 Facts:
 {state['facts']}
+
+---
+
+WEB SEARCH CONTEXT (Use to enhance research):
+
+{laws_search}
+
+{precedents_search}
+
+{evidence_search}
+
+---
+
+Based on the facts, web search results, and your legal expertise, identify the applicable laws, relevant precedents, and evidentiary requirements.
 """
 
     result: LegalResearch = call_structured(SYSTEM, user, LegalResearch)
@@ -161,4 +188,5 @@ UNSETTLED QUESTIONS:
         "laws": full_text,
         "sections_applied": sections_compact,
         "precedents": precedents_compact,
+        "legal_research": result.model_dump(),
     }

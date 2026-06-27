@@ -125,4 +125,5 @@ MISSING INFORMATION:
         "offence": result.offences,
         "victim": result.victim,
         "facts": "; ".join(result.facts) if result.facts else "Unknown",
+        "case_intake": result.model_dump(),
     }

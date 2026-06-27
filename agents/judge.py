@@ -14,103 +14,93 @@ JUDICIAL TEMPERAMENT
 
 • You listen to both prosecution and defence fully before forming a view. When you speak, it is to resolve — not to argue.
 
-• You reason from first principles:
+• You reason from first principles: identify the issue, locate applicable law, apply facts to law, and reach a reasoned conclusion.
 
-1. Identify the issue.
-2. Locate the applicable law and precedent.
-3. Apply the facts to the law.
-4. Arrive at a reasoned conclusion.
+• You always show your reasoning in natural judicial language.
 
-• You always show your reasoning, not merely your conclusion.
+• You cite statutory provisions and precedents by name wherever relevant.
 
-• You cite statutory provisions by section number and precedents by case name wherever relevant.
+• You distinguish authorities that do not squarely apply.
 
-• You distinguish authorities that do not squarely apply and explain why.
-
-You never display favouritism, prejudice, hostility, or impatience.
-
-• If an argument is weak, explain why with legal reasoning.
-
-• If a matter falls outside judicial competence or requires legislative intervention, state so plainly and confine yourself to what the law presently permits.
+• You never display favouritism, prejudice, or impatience. If an argument is weak, explain why with legal reasoning.
 
 RESPONSE STYLE
 
-• Use clear, formal judicial English.
+• Use clear, natural formal judicial English.
 
 • Be concise but thorough.
 
-• Avoid rhetoric, emotion, advocacy, or political commentary.
+• State your verdict and reasoning together in coherent prose, not in bullet points or fragments.
 
-Be judicial.
-Do not invent evidence.
-Base conclusions only on material provided.
+• Avoid rhetoric, emotion, or advocacy. Be judicial.
+
+• Base conclusions only on material provided. Do not invent evidence.
 
 CONFIDENCE SCORE
 
-After reaching your verdict, assess your confidence in this judgment on a scale of 0–100:
-
-• 90–100: Facts are clear, law is settled, verdict is compelled by evidence and precedent.
-• 70–89: Facts are mostly clear, law is settled, but some ambiguity remains.
-• 50–69: Facts are mixed or ambiguous, or law is unsettled; verdict is reasonable but not inevitable.
-• 0–49: Critical facts are missing, evidence is thin, law is highly uncertain, or the case is genuinely close.
-
-State your confidence score as a single integer (0–100).
+After reaching your verdict, assess your confidence on a scale of 0–100:
+• 90–100: Facts clear, law settled, verdict compelled by evidence.
+• 70–89: Mostly clear, some ambiguity remains.
+• 50–69: Mixed facts or unsettled law; reasonable but not inevitable.
+• 0–49: Critical facts missing, evidence thin, genuinely close case.
 """
 
 
 def run_judge(state: CourtState) -> dict:
-    user = f"""Case: {state['complaint']}
+    user = f"""CASE MATERIALS:
 
-Laws researched:\n{state['laws']}
+Complaint:
+{state['complaint']}
 
-Prosecution R1:\n{state['pros_r1']}
-Defense R1:\n{state['def_r1']}
-Prosecution R2:\n{state['pros_r2']}
-Defense R2:\n{state['def_r2']}"""
+Applicable Laws:
+{state['laws']}
+
+Prosecution (Round 1):
+{state['pros_r1']}
+
+Defense (Round 1):
+{state['def_r1']}
+
+Prosecution (Round 2):
+{state['pros_r2']}
+
+Defense (Round 2):
+{state['def_r2']}
+
+---
+
+Provide your verdict and reasoning. Include sections applied and probable punishment if guilty."""
 
     result: JudgeVerdict = call_structured(SYSTEM, user, JudgeVerdict)
 
-    # Reconstruct a readable full-text verdict for display/download
-    # (app.py and the markdown export expect a single "verdict" string)
-    full_text = f"""FINDINGS:
-{result.findings}
+    # Reconstruct readable verdict for display
+    full_text = f"""JUDGMENT
 
-PROSECUTION ASSESSMENT:
-{result.prosecution_assessment}
-
-DEFENSE ASSESSMENT:
-{result.defense_assessment}
+VERDICT: {result.verdict}
 
 REASONING:
 {result.reasoning}
 
-VERDICT:
-{result.verdict}
-
 SECTIONS APPLIED:
-{", ".join(result.sections_applied)}
+{", ".join(result.sections_applied) if result.sections_applied else "N/A"}
 
 PROBABLE PUNISHMENT:
-{result.probable_punishment}
+{result.probable_punishment if result.probable_punishment else "N/A"}
 
-CONFIDENCE:
-{result.confidence}"""
+CONFIDENCE: {result.confidence}/100"""
 
     return {
         "verdict": full_text,
         "verdict_short": result.verdict,
         "confidence": result.confidence,
-        "sections_applied": ", ".join(result.sections_applied),
         "reasoning": result.reasoning,
-        "probable_punishment": result.probable_punishment,
+        "sections_applied": ", ".join(result.sections_applied) if result.sections_applied else "N/A",
+        "probable_punishment": result.probable_punishment or "N/A",
         "judge_verdict": {
             "verdict": result.verdict,
-            "confidence": result.confidence,
-            "findings": result.findings,
-            "prosecution_assessment": result.prosecution_assessment,
-            "defense_assessment": result.defense_assessment,
             "reasoning": result.reasoning,
+            "confidence": result.confidence,
             "sections_applied": result.sections_applied,
-            "probable_punishment": result.probable_punishment,
+            "probable_punishment": result.probable_punishment or "",
         },
     }
