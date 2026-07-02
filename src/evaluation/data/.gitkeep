@@ -1,0 +1,3 @@
+# Evaluation metrics are stored here
+# metrics_history.jsonl - Historical metrics (append-only)
+# summary.json - Current summary statistics

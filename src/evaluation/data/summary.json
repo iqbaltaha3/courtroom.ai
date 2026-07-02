@@ -1,0 +1,27 @@
+{
+  "total_cases": 7,
+  "last_updated": "2026-06-27T19:37:28.709721",
+  "verdict_distribution": {
+    "Guilty": 1,
+    "Not Guilty": 2,
+    "Partially Liable": 0
+  },
+  "average_scores": {
+    "case_extraction": 50.0,
+    "fact_accuracy": 38.57142857142857,
+    "legal_research": 25.714285714285715,
+    "prosecution_coherence": 71.42857142857143,
+    "defense_coherence": 71.42857142857143,
+    "verdict_quality": 42.857142857142854,
+    "confidence_calibration": 29.285714285714285,
+    "reasoning_clarity": 42.857142857142854,
+    "overall_quality": 42.148809523809526
+  },
+  "latest_case": {
+    "timestamp": "2026-06-27T19:37:28.708524",
+    "case_id": "68572c70",
+    "accused": "Unknown",
+    "verdict": "Not Guilty",
+    "overall_quality": 71.79166666666667
+  }
+}

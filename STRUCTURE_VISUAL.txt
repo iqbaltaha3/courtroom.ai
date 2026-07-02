@@ -1,0 +1,140 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║              MYPESHKAR MODULAR ARCHITECTURE VISUAL OVERVIEW                ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│                         UI LAYER (Streamlit)                              │
+│                                                                            │
+│  src/ui/app.py  →  Tools Page  │  Metrics Page  │  Vision Page           │
+│                   Components (Styles, Forms, Cards)                       │
+│                                                                            │
+│  ← Displays case analysis to users                                        │
+│  ← Accepts complaint input                                                │
+│  ← Shows verdict & reports                                                │
+└────────────────────┬─────────────────────────────────────────────────────┘
+                     │
+┌────────────────────▼─────────────────────────────────────────────────────┐
+│                    CORE LAYER (Orchestration)                            │
+│                                                                          │
+│  src/core/orchestrator.py  ← LangGraph Workflow                         │
+│  src/core/state.py         ← CourtState (data structure)                │
+│                                                                          │
+│  Coordinates 8 agents in sequence:                                      │
+│  Case Analyst → Researcher → Prosecutor(R1) → Defense(R1)             │
+│  → Prosecutor(R2) → Defense(R2) → Judge → Reporter → TopConsultant    │
+└────────────────────┬─────────────────────────────────────────────────────┘
+                     │
+         ┌───────────┴──────────────┐
+         │                          │
+┌────────▼──────────┐      ┌───────▼──────────┐
+│  AGENTS LAYER     │      │  SERVICES LAYER  │
+│                   │      │                  │
+│ src/agents/       │      │ src/services/    │
+│ • case_analyst    │      │ • llm_service    │
+│ • legal_research  │ ────→│ • auth_service   │
+│ • prosecutor      │      │                  │
+│ • defense         │      │ [External APIs]  │
+│ • judge           │      │ ↓                │
+│ • reporter        │      │ Groq LLM API     │
+│ • consultant      │      │ CSV Auth         │
+│ • top_consultant  │      │                  │
+└────────┬──────────┘      └──────────────────┘
+         │
+         │ uses
+         ▼
+┌──────────────────────────────────────────────────────┐
+│              CONFIG & UTILS LAYER                   │
+│                                                     │
+│  src/config/                                       │
+│  • constants.py  (colors, names, timeouts)        │
+│  • settings.py   (env vars, API keys)             │
+│                                                     │
+│  src/utils/                                        │
+│  • web_search.py (web search integration)         │
+│  • helpers.py    (utility functions)              │
+│  • validators.py (input validation)               │
+│  • logger.py     (logging setup)                  │
+│                                                     │
+│  src/evaluation/                                   │
+│  • evaluator.py  (quality metrics)                │
+│  • metrics.py    (performance tracking)           │
+│  • dashboard.py  (UI visualization)               │
+└──────────────────────────────────────────────────────┘
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                         DATA FLOW EXAMPLE                                 ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+User Input (Complaint)
+        │
+        ▼
+    [UI Layer]
+        │
+        ▼
+[Core: Orchestrator]
+        │
+        ▼
+[Agent 1: Case Analyst] ──reads state──→ [Service: LLM]
+        │                                     │
+        └─────────── updates state ←──────────┘
+                     │
+                     ▼
+           [Agent 2: Researcher] ──→ [LLM Service]
+                     │
+                     ▼
+           [Agent 3: Prosecutor] ──→ [LLM Service]
+                     │
+                     ▼
+            ... continues through all agents ...
+                     │
+                     ▼
+             [Agent 10: TopConsultant]
+                     │
+                     ▼
+              Final State (Complete)
+                     │
+                     ▼
+               [UI Layer]
+                     │
+                     ▼
+            Display Results to User
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                    IMPORT PATTERN EXAMPLES                                ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+In an AGENT (src/agents/case_analyst.py):
+    from ..services import call_structured
+    from ..core import CourtState
+    from .schemas import CaseIntake
+
+In a SERVICE (src/services/llm_service.py):
+    from ..config import API_TIMEOUT
+    from ..config import LLM_MODEL_PROSE
+
+In UI PAGE (src/ui/pages/tools_page.py):
+    from ..core import court_graph, CourtState
+    from ..config import APP_NAME
+
+═══════════════════════════════════════════════════════════════════════════════
+
+KEY CONCEPT: ".." means "go up one directory level"
+
+src/
+├── agents/          ← if you're here
+│   └── case_analyst.py
+│
+└── services/        ← ".." gets you here (parent level)
+    └── llm_service.py
+
+═══════════════════════════════════════════════════════════════════════════════
+
+WHY THIS MATTERS FOR INTERVIEWS:
+
+1. SCALABILITY    - Add new agents? Just add to src/agents/
+2. TESTABILITY    - Test agents independently without UI
+3. MAINTAINABILITY - Change LLM? Only update llm_service.py
+4. READABILITY    - New engineer sees structure instantly
+5. PROFESSIONALISM - Looks like experienced team wrote it
+
+═══════════════════════════════════════════════════════════════════════════════
