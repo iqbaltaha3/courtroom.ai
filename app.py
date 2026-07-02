@@ -13,7 +13,7 @@ from auth import authenticate, submit_access_request
 # PAGE CONFIG
 # ============================================
 st.set_page_config(
-    page_title="Nyaya Mitra - Intelligence for India's Legal Profession",
+    page_title="MyPeshkar - Never Miss a Tareekh.",
     page_icon="⚖",
     layout="wide"
 )
@@ -45,11 +45,13 @@ st.markdown("""
         box-shadow: 0 4px 16px rgba(107, 83, 68, 0.25);
     }
     .court-header h1 {
-        font-size: 32px;
-        font-weight: 700;
-        letter-spacing: 1px;
+        font-size: 56px;
+        font-weight: 300;
+        font-family: 'Brush Script MT', 'Lucida Handwriting', cursive;
+        letter-spacing: 2px;
         color: #ffffff;
         margin: 0;
+        transform: skewX(-10deg);
     }
     .court-header h1 span {
         color: #ffffff;
@@ -531,7 +533,7 @@ def esc(text) -> str:
 
 def _build_report_content(state: dict) -> str:
     report_lines = []
-    report_lines.append("# ⚖️ Nyaya Mitra Case Analysis Report")
+    report_lines.append("# ⚖️ MyPeshkar Case Analysis Report")
     report_lines.append(f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     report_lines.append("")
     
@@ -748,8 +750,8 @@ if "uploaded_complaint" not in st.session_state:
 # ============================================
 st.markdown("""
 <div class="court-header">
-    <h1>Nyaya Mitra</h1>
-    <p>Intelligence for India's legal profession</p>
+    <h1>MyPeshkar</h1>
+    <p>Never Miss a Tareekh.</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1537,42 +1539,33 @@ else:
         st.markdown("""
         ## Our Vision
 
-        **Nyaya Mitra** — Intelligence for India's legal profession.
+        *Every court has a Peshkar — managing files, tracking orders, keeping every hearing on schedule.*
 
-        ### The Problem
+        *Now every lawyer can have their own.*
 
-        India has over **1.5 million practicing advocates** — yet the tools built for legal research and case preparation rarely reach beyond the country's top firms and metro cities. The result: talented lawyers spend hours on manual research instead of strategy, and justice moves slower than it should.
+        ### What is MyPeshkar?
 
-        ### Our Mission
+        MyPeshkar organizes your cases, tracks your hearing dates, and prepares your research — so you walk into court ready, every single time.
 
-        **Nyaya Mitra exists to change that.**
+        ### Not a Replacement
 
-        We're building an AI companion for India's legal professionals — one that understands the reality of Indian practice:
-        - Bilingual courtrooms
-        - Fragmented case law databases
-        - Time-starved practitioners who need answers, not more homework
+        MyPeshkar is not a replacement for your legal skill. It's your personal Peshkar, working for you.
 
-        Nyaya Mitra doesn't replace legal judgment. It removes the friction around it — surfacing relevant precedent, structuring arguments, and working fluently across Hindi and English, so lawyers can focus on what only they can do: advocate.
+        A Peshkar handles the administrative burden so the lawyer can focus on advocacy. MyPeshkar does exactly that:
 
-        ### Our Belief
+        ✓ **Organize Cases** — All your case files, arguments, and research in one place  
+        ✓ **Track Hearings** — Never miss a Tareekh (court date) again  
+        ✓ **Prepare Research** — AI-powered legal research across Indian precedent and statutes  
+        ✓ **Structure Arguments** — Turn scattered notes into coherent legal arguments  
+        ✓ **Bilingual Support** — Work seamlessly in Hindi and English  
 
-        **Every lawyer, regardless of location or firm size, deserves access to world-class research capability.**
+        ### Why It Matters
 
-        - Better-prepared lawyers lead to a faster, fairer justice system
-        - Technology should serve the practice of law — not complicate it
-        - Intelligence should be distributed, not concentrated in metros
+        India has over **1.5 million practicing advocates**. Most manage cases on paper, spreadsheets, and memory. 
 
-        ### How We're Different
-
-        Unlike generic legal AI platforms, Nyaya Mitra is purpose-built for India:
-
-        ✓ **Understands Indian Law** — Access to Indian precedent, statutes, and case law  
-        ✓ **Bilingual Support** — Seamless Hindi-English reasoning and research  
-        ✓ **Designed for Practice** — Built with working lawyers, for working lawyers  
-        ✓ **Accessible** — Works for solo practitioners, small firms, and large teams  
-        ✓ **Fast & Reliable** — No frills, just results lawyers can trust  
+        A Peshkar ensures nothing falls through the cracks. Your Peshkar—MyPeshkar—does the same.
 
         ---
 
-        **Nyaya Mitra** — Building the intelligence layer for India's justice system, one case at a time.
+        **MyPeshkar** — Your personal legal Peshkar. Never miss a Tareekh again.
         """)
