@@ -6,7 +6,15 @@ Enables the legal research agent to find current laws, precedents, and case law.
 import os
 from tavily import TavilyClient
 
-tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+# Try to load from Streamlit secrets (for hosted deployments)
+try:
+    import streamlit as st
+    TAVILY_API_KEY = st.secrets.get("TAVILY_API_KEY") or os.getenv("TAVILY_API_KEY")
+except (ImportError, AttributeError, FileNotFoundError):
+    # Fallback to environment variables (local development)
+    TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
+
+tavily = TavilyClient(api_key=TAVILY_API_KEY)
 
 
 def search_legal_precedents(query: str, offence: str) -> str:

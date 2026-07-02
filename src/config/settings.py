@@ -5,13 +5,22 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+# Helper function to get config from Streamlit secrets or environment
+def get_secret(key: str, default: str = "") -> str:
+    """Get secret from Streamlit secrets or environment variables."""
+    try:
+        import streamlit as st
+        return st.secrets.get(key) or os.getenv(key, default)
+    except (ImportError, AttributeError, FileNotFoundError):
+        return os.getenv(key, default)
+
 # ========== API KEYS & SECRETS ==========
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-LANGCHAIN_API_KEY = os.getenv("LANGCHAIN_API_KEY", "")
-TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
+GROQ_API_KEY = get_secret("GROQ_API_KEY")
+LANGCHAIN_API_KEY = get_secret("LANGCHAIN_API_KEY")
+TAVILY_API_KEY = get_secret("TAVILY_API_KEY")
 
 # ========== ENVIRONMENT ==========
-ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+ENVIRONMENT = get_secret("ENVIRONMENT", "development")
 DEBUG = ENVIRONMENT == "development"
 PRODUCTION = ENVIRONMENT == "production"
 

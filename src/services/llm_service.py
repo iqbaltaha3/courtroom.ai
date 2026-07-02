@@ -9,13 +9,21 @@ from typing import Type, TypeVar
 # Load environment variables
 load_dotenv()
 
+# Try to load from Streamlit secrets (for hosted deployments)
+try:
+    import streamlit as st
+    GROQ_API_KEY = st.secrets.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
+except (ImportError, AttributeError, FileNotFoundError):
+    # Fallback to environment variables (local development)
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
 # ========== LLM MODELS ==========
 MODEL_PROSE = "llama-3.1-8b-instant"           # Fast prose generation
 MODEL_SIMPLE_STRUCT = "openai/gpt-oss-20b"     # Structured output (simple schemas)
 MODEL_COMPLEX_STRUCT = "openai/gpt-oss-120b"   # Structured output (complex schemas)
 
-# Initialize Groq client
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+# Initialize Groq client with API key from Streamlit secrets or environment
+client = Groq(api_key=GROQ_API_KEY)
 
 T = TypeVar("T", bound=BaseModel)
 
