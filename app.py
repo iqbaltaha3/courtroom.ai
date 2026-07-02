@@ -32,12 +32,12 @@ st.markdown("""
     /* -------------------- SCROLLBAR -------------------- */
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: #eaedf2; }
-    ::-webkit-scrollbar-thumb { background: #8B6F47; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #6B5344; }
+    ::-webkit-scrollbar-thumb { background: #704214; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #4A2C1A; }
 
     /* -------------------- HEADER -------------------- */
     .court-header {
-        background: linear-gradient(135deg, #8B6F47 0%, #6B5344 100%);
+        background: linear-gradient(135deg, #704214 0%, #4A2C1A 100%);
         padding: 2.5rem 2.5rem;
         border-radius: 8px;
         margin-bottom: 2rem;
@@ -65,21 +65,21 @@ st.markdown("""
 
     /* -------------------- TOP ROW: CASE MANAGER + LEGAL RESEARCH -------------------- */
     .top-card {
-        background: #ffffff;
-        border: 2px solid #C4B5A0;
+        background: linear-gradient(135deg, #FFFBF5 0%, #F5E6D3 100%);
+        border: 2px solid #D4A574;
         padding: 1.5rem;
         border-radius: 8px;
         height: 100%;
-        border-left: 6px solid #8B6F47;
+        border-left: 6px solid #704214;
         min-height: 140px;
-        box-shadow: 0 4px 12px rgba(107, 83, 68, 0.15);
+        box-shadow: 0 4px 12px rgba(70, 42, 26, 0.15), inset 0 1px 0 rgba(212, 165, 116, 0.3);
         transition: box-shadow 0.2s ease;
     }
     .top-card:hover {
-        box-shadow: 0 6px 20px rgba(107, 83, 68, 0.2);
+        box-shadow: 0 6px 20px rgba(70, 42, 26, 0.2), inset 0 1px 0 rgba(212, 165, 116, 0.4);
     }
     .top-card h4 {
-        color: #8B6F47;
+        color: #704214;
         font-size: 12px;
         text-transform: uppercase;
         letter-spacing: 1.5px;
@@ -119,7 +119,7 @@ st.markdown("""
         color: #27ae60;
     }
     .top-card .sublabel {
-        color: #8B6F47;
+        color: #704214;
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 1.5px;
@@ -142,8 +142,8 @@ st.markdown("""
 
     /* -------------------- LEGAL RESEARCH CARD ITEMS -------------------- */
     .law-card {
-        background: #f8f9fb;
-        border-left: 6px solid #8B6F47;
+        background: linear-gradient(135deg, #FFFBF5 0%, #F5E6D3 100%);
+        border-left: 6px solid #704214;
         padding: 1rem;
         margin-bottom: 1rem;
         font-size: 14px;
@@ -152,7 +152,7 @@ st.markdown("""
     }
     .law-card .title {
         font-weight: 700;
-        color: #6B5344;
+        color: #4A2C1A;
         margin-bottom: 4px;
     }
     .law-card .meta {
@@ -167,14 +167,14 @@ st.markdown("""
 
     /* -------------------- JUDGE & VERDICT -------------------- */
     .judge-container {
-        background: #ffffff;
-        border: 2px solid #C4B5A0;
-        border-left: 6px solid #8B6F47;
+        background: linear-gradient(135deg, #FFFBF5 0%, #F5E6D3 100%);
+        border: 2px solid #D4A574;
+        border-left: 6px solid #704214;
         padding: 1.5rem 2rem;
         margin-bottom: 1.5rem;
         text-align: center;
         border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(107, 83, 68, 0.15);
+        box-shadow: 0 4px 12px rgba(70, 42, 26, 0.15), inset 0 1px 0 rgba(212, 165, 116, 0.3);
     }
     .judge-container .label {
         color: #7f8c8d;
@@ -193,30 +193,30 @@ st.markdown("""
     .judge-container .verdict-red { color: #e74c3c; }
     .judge-container .verdict-amber { color: #f39c12; }
     .judge-container .confidence {
-        background: #f0f3f7;
+        background: rgba(212, 165, 116, 0.1);
         padding: 6px 18px;
         border-radius: 20px;
-        color: #8B6F47;
+        color: #704214;
         font-size: 13px;
         font-weight: 700;
-        border: 2px solid #C4B5A0;
+        border: 2px solid #D4A574;
         display: inline-block;
         margin-top: 0.5rem;
     }
 
     /* Full Verdict Reasoning Box */
     .verdict-reasoning {
-        background: #ffffff;
-        border: 2px solid #C4B5A0;
-        border-left: 6px solid #8B6F47;
+        background: linear-gradient(135deg, #FFFBF5 0%, #F5E6D3 100%);
+        border: 2px solid #D4A574;
+        border-left: 6px solid #704214;
         padding: 1.5rem;
         margin-bottom: 1.5rem;
         border-radius: 8px;
         text-align: left;
-        box-shadow: 0 4px 12px rgba(107, 83, 68, 0.15);
+        box-shadow: 0 4px 12px rgba(70, 42, 26, 0.15), inset 0 1px 0 rgba(212, 165, 116, 0.3);
     }
     .verdict-reasoning .label {
-        color: #8B6F47;
+        color: #704214;
         font-size: 12px;
         text-transform: uppercase;
         letter-spacing: 1.5px;
@@ -238,15 +238,15 @@ st.markdown("""
         margin-bottom: 1.5rem;
     }
     .verdict-field {
-        background: #ffffff;
-        border: 2px solid #C4B5A0;
-        border-left: 6px solid #8B6F47;
+        background: linear-gradient(135deg, #FFFBF5 0%, #F5E6D3 100%);
+        border: 2px solid #D4A574;
+        border-left: 6px solid #704214;
         padding: 1.2rem;
         border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(107, 83, 68, 0.15);
+        box-shadow: 0 4px 12px rgba(70, 42, 26, 0.15), inset 0 1px 0 rgba(212, 165, 116, 0.3);
     }
     .verdict-field .label {
-        color: #8B6F47;
+        color: #704214;
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 1.5px;
@@ -265,9 +265,9 @@ st.markdown("""
         gap: 0.6rem;
     }
     .sections-pill {
-        background: #f0f3f7;
-        border: 2px solid #8B6F47;
-        color: #8B6F47;
+        background: rgba(212, 165, 116, 0.15);
+        border: 2px solid #704214;
+        color: #704214;
         font-size: 12px;
         font-weight: 600;
         padding: 6px 14px;
@@ -276,16 +276,16 @@ st.markdown("""
 
     /* -------------------- DEBATE COLUMNS -------------------- */
     .debate-column {
-        background: #ffffff;
-        border: 2px solid #C4B5A0;
+        background: linear-gradient(135deg, #FFFBF5 0%, #F5E6D3 100%);
+        border: 2px solid #D4A574;
         padding: 1.5rem;
         height: 100%;
         min-height: 250px;
-        border-left: 6px solid #8B6F47;
+        border-left: 6px solid #704214;
         overflow-y: auto;
         max-height: 500px;
         border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(107, 83, 68, 0.15);
+        box-shadow: 0 4px 12px rgba(70, 42, 26, 0.15), inset 0 1px 0 rgba(212, 165, 116, 0.3);
     }
     .debate-column .col-header {
         display: flex;
@@ -321,8 +321,8 @@ st.markdown("""
         text-align: center;
     }
     .argument-block {
-        background: #f8f9fb;
-        border-left: 6px solid #8B6F47;
+        background: linear-gradient(135deg, #FFFBF5 0%, #F5E6D3 100%);
+        border-left: 6px solid #704214;
         padding: 1rem;
         margin-bottom: 1rem;
         border-radius: 4px;
@@ -335,7 +335,7 @@ st.markdown("""
     .argument-block .round-tag {
         font-size: 11px;
         text-transform: uppercase;
-        color: #8B6F47;
+        color: #704214;
         font-weight: 700;
         letter-spacing: 1px;
         margin-bottom: 6px;
@@ -346,16 +346,16 @@ st.markdown("""
 
     /* -------------------- COURT REPORTER (BOTTOM) -------------------- */
     .reporter-card {
-        background: #ffffff;
-        border: 2px solid #C4B5A0;
+        background: linear-gradient(135deg, #FFFBF5 0%, #F5E6D3 100%);
+        border: 2px solid #D4A574;
         padding: 1.5rem;
         border-radius: 8px;
-        border-left: 6px solid #8B6F47;
+        border-left: 6px solid #704214;
         margin-top: 1.5rem;
-        box-shadow: 0 4px 12px rgba(107, 83, 68, 0.15);
+        box-shadow: 0 4px 12px rgba(70, 42, 26, 0.15), inset 0 1px 0 rgba(212, 165, 116, 0.3);
     }
     .reporter-card h4 {
-        color: #8B6F47;
+        color: #704214;
         font-size: 12px;
         text-transform: uppercase;
         letter-spacing: 1.5px;
@@ -367,7 +367,7 @@ st.markdown("""
         font-size: 18px;
         font-weight: 700;
         margin-bottom: 1rem;
-        border-left: 6px solid #8B6F47;
+        border-left: 6px solid #704214;
         padding-left: 1rem;
     }
     .reporter-card .report {
@@ -397,7 +397,7 @@ st.markdown("""
         box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1) !important;
     }
     .stButton button {
-        background: #8B6F47 !important;
+        background: linear-gradient(135deg, #704214 0%, #5A3410 100%) !important;
         color: #ffffff !important;
         font-weight: 700 !important;
         border: none !important;
@@ -406,12 +406,12 @@ st.markdown("""
         letter-spacing: 0.5px;
         font-size: 14px !important;
         transition: all 0.2s ease !important;
-        box-shadow: 0 4px 12px rgba(107, 83, 68, 0.25);
+        box-shadow: 0 4px 12px rgba(70, 42, 26, 0.3), inset 0 1px 0 rgba(212, 165, 116, 0.3);
         width: 100%;
     }
     .stButton button:hover {
-        background: #6B5344 !important;
-        box-shadow: 0 6px 20px rgba(107, 83, 68, 0.35) !important;
+        background: linear-gradient(135deg, #5A3410 0%, #4A2C1A 100%) !important;
+        box-shadow: 0 6px 20px rgba(70, 42, 26, 0.4), inset 0 1px 0 rgba(212, 165, 116, 0.4) !important;
     }
     .stButton button:disabled {
         opacity: 0.5;
@@ -433,7 +433,7 @@ st.markdown("""
         padding: 0.5rem 0;
         letter-spacing: 0.5px;
     }
-    .status-text .gold { color: #8B6F47; }
+    .status-text .gold { color: #704214; }
 
     /* -------------------- IDLE STATE -------------------- */
     .idle-state {
@@ -447,7 +447,7 @@ st.markdown("""
         opacity: 0.6;
     }
     .idle-state h2 {
-        color: #8B6F47;
+        color: #704214;
         font-weight: 600;
         letter-spacing: 1px;
         font-size: 26px;
@@ -459,14 +459,14 @@ st.markdown("""
 
     /* -------------------- COMPLAINT DISPLAY -------------------- */
     .complaint-box {
-        background: #f8f9fb;
-        border-left: 6px solid #8B6F47;
+        background: linear-gradient(135deg, #FFFBF5 0%, #F5E6D3 100%);
+        border-left: 6px solid #704214;
         padding: 1.2rem;
         margin-bottom: 1rem;
         border-radius: 4px;
     }
     .complaint-box .label {
-        color: #8B6F47;
+        color: #704214;
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 1.5px;
@@ -773,20 +773,20 @@ if not st.session_state.authenticated:
             padding: 0;
         }
         .login-section {
-            background: #ffffff;
+            background: linear-gradient(135deg, #FFFBF5 0%, #F5E6D3 100%);
             padding: 2.5rem;
             border-radius: 8px;
-            border: 2px solid #C4B5A0;
-            box-shadow: 0 4px 16px rgba(107, 83, 68, 0.15);
+            border: 2px solid #D4A574;
+            box-shadow: 0 4px 16px rgba(70, 42, 26, 0.15), inset 0 1px 0 rgba(212, 165, 116, 0.3);
             margin-bottom: 1.5rem;
         }
         .login-section h3 {
-            color: #8B6F47;
+            color: #704214;
             font-size: 20px;
             font-weight: 700;
             margin-top: 0;
             margin-bottom: 1.5rem;
-            border-bottom: 2px solid #C4B5A0;
+            border-bottom: 2px solid #D4A574;
             padding-bottom: 1rem;
             text-align: center;
         }
@@ -799,8 +799,8 @@ if not st.session_state.authenticated:
             font-size: 14px !important;
         }
         .stTextInput > div > div > input:focus {
-            border-color: #8B6F47 !important;
-            box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.1) !important;
+            border-color: #704214 !important;
+            box-shadow: 0 0 0 3px rgba(112, 66, 20, 0.15) !important;
         }
         .stTextArea textarea {
             background: #f8f9fb !important;
@@ -811,8 +811,8 @@ if not st.session_state.authenticated:
             font-size: 14px !important;
         }
         .stTextArea textarea:focus {
-            border-color: #8B6F47 !important;
-            box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.1) !important;
+            border-color: #704214 !important;
+            box-shadow: 0 0 0 3px rgba(112, 66, 20, 0.15) !important;
         }
         .stFormSubmitButton {
             width: 100%;
@@ -926,11 +926,12 @@ else:
             with col1:
                 st.markdown("""
                 <div style="
-                    background: linear-gradient(135deg, #ffffff 0%, #f9f8f6 100%);
-                    border: 2px solid #8B6F47;
+                    background: linear-gradient(135deg, #FFFBF5 0%, #F5E6D3 100%);
+                    border: 2px solid #704214;
+                    box-shadow: 0 12px 32px rgba(70, 42, 26, 0.2), inset 0 1px 0 rgba(212, 165, 116, 0.3);
                     border-radius: 16px;
                     padding: 40px;
-                    box-shadow: 0 12px 32px rgba(107, 83, 68, 0.15);
+                    box-shadow: 0 12px 32px rgba(70, 42, 26, 0.2), inset 0 1px 0 rgba(212, 165, 116, 0.3);
                     cursor: pointer;
                     transition: all 0.3s ease;
                     min-height: 300px;
@@ -957,10 +958,10 @@ else:
                 st.markdown("""
                 <div style="
                     background: #f9f8f6;
-                    border: 2px dashed #d4af37;
+                    border: 2px dashed #D4A574;
                     border-radius: 16px;
                     padding: 40px;
-                    box-shadow: 0 4px 12px rgba(107, 83, 68, 0.08);
+                    box-shadow: 0 4px 12px rgba(70, 42, 26, 0.12);
                     opacity: 0.7;
                     min-height: 300px;
                     display: flex;
@@ -1353,7 +1354,7 @@ else:
         with st.expander("Court Reporter Summary", expanded=True):
             if headline or report:
                 if headline:
-                    st.markdown(f'<div style="font-size: 18px; font-weight: 700; margin-bottom: 1rem; color: #8B6F47;">{esc(headline)}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div style="font-size: 18px; font-weight: 700; margin-bottom: 1rem; color: #704214;">{esc(headline)}</div>', unsafe_allow_html=True)
                 if report:
                     st.markdown(f'<div style="font-size: 15px; line-height: 1.8; color: #2c3e50; white-space: pre-wrap;">{esc(report)}</div>', unsafe_allow_html=True)
             else:
