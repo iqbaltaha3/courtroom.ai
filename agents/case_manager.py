@@ -95,12 +95,25 @@ For every complaint:
 When facts are uncertain, label them as allegations.
 
 Never present allegations as established facts.
+
+OUTPUT CONSTRAINTS
+
+• Limit facts to 5-7 key material facts only (omit minor details).
+• Limit missing_information to 3-4 critical gaps only.
+• Be concise: each fact and gap statement should be 1-2 sentences max.
 """
 
 
 def run_case_manager(state: CourtState) -> dict:
+    # Truncate complaint to avoid token limit exceeded errors
+    # Reserve tokens for system prompt and structured response
+    MAX_COMPLAINT_CHARS = 4000
+    complaint = state['complaint']
+    if len(complaint) > MAX_COMPLAINT_CHARS:
+        complaint = complaint[:MAX_COMPLAINT_CHARS] + "\n\n[... complaint text truncated due to length ...]"
+    
     result: CaseIntake = call_structured(
-        SYSTEM, f"Complaint:\n{state['complaint']}", CaseIntake
+        SYSTEM, f"Complaint:\n{complaint}", CaseIntake, max_tokens=1500
     )
 
     # Reconstruct a readable full-text summary for display

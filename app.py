@@ -691,6 +691,12 @@ if "node_times" not in st.session_state:
 if "evaluator" not in st.session_state:
     st.session_state.evaluator = SystemEvaluator()
 
+if "complaint_input" not in st.session_state:
+    st.session_state.complaint_input = ""
+
+if "uploaded_complaint" not in st.session_state:
+    st.session_state.uploaded_complaint = ""
+
 
 # ============================================
 # HEADER (MOVED TO TOP)
@@ -714,91 +720,89 @@ tab_simulation, tab_metrics = st.tabs(["⚖️ Simulation", "📊 Metrics"])
 # ============================================
 with tab_simulation:
     # ============================================
-    # INPUT SECTION
+    # INPUT SECTION (hidden during simulation)
     # ============================================
-    with st.container():
-        col_input1, col_input2 = st.columns([3, 1])
-        with col_input1:
-            complaint = st.text_area(
-                "Complaint",
-                height=120,
-                placeholder="Enter the case brief / complaint details here...",
-                key="complaint_input",
-                disabled=st.session_state.case_state["is_running"],
-                label_visibility="collapsed"
-            )
+    if not st.session_state.case_state.get("is_running"):
+        with st.container():
+            col_input1, col_input2 = st.columns([3, 1])
+            with col_input1:
+                # UPLOAD HANDLER FIRST (before text_area widget)
+                uploaded_file = st.file_uploader(
+                    "Or upload a complaint file (.txt, .pdf)",
+                    type=['txt', 'pdf'],
+                    key="complaint_uploader",
+                    disabled=False,
+                    label_visibility="visible"
+                )
 
-            uploaded_file = st.file_uploader(
-                "Or upload a complaint file (.txt, .pdf)",
-                type=['txt', 'pdf'],
-                key="complaint_uploader",
-                disabled=st.session_state.case_state["is_running"],
-                label_visibility="visible"
-            )
-
-            if uploaded_file is not None:
-                try:
-                    file_type = uploaded_file.type
-                    text = ""
-                    if file_type == "text/plain":
-                        text = uploaded_file.getvalue().decode("utf-8")
-                    elif file_type == "application/pdf":
-                        try:
-                            from pypdf import PdfReader
-                            reader = PdfReader(uploaded_file)
-                            for page in reader.pages:
-                                page_text = page.extract_text()
-                                if page_text:
-                                    text += page_text + "\n"
-                        except ImportError:
-                            st.error("The 'pypdf' library is required for PDF uploads. Please install it with: pip install pypdf")
-                            text = ""
-                    else:
-                        st.warning("Unsupported file type. Please upload .txt or .pdf.")
+                if uploaded_file is not None:
+                    try:
+                        file_type = uploaded_file.type
                         text = ""
+                        if file_type == "text/plain":
+                            text = uploaded_file.getvalue().decode("utf-8")
+                        elif file_type == "application/pdf":
+                            try:
+                                from pypdf import PdfReader
+                                reader = PdfReader(uploaded_file)
+                                for page in reader.pages:
+                                    page_text = page.extract_text()
+                                    if page_text:
+                                        text += page_text + "\n"
+                            except ImportError:
+                                st.error("The 'pypdf' library is required for PDF uploads. Please install it with: pip install pypdf")
+                                text = ""
+                        
+                        if text:
+                            # Store in a separate variable, NOT in complaint_input
+                            st.session_state.uploaded_complaint = text
+                            # Show confirmation - don't display the full text
+                            st.success(f"✅ File uploaded successfully ({len(text)} characters)")
+                    except Exception as e:
+                        st.error(f"Error reading file: {e}")
 
-                    if text:
-                        st.session_state.complaint_input = text
-                        st.rerun()
-                except Exception as e:
-                    st.error(f"Error reading file: {e}")
+                # NOW CREATE TEXT_AREA (after session_state is populated)
+                # User can edit manually entered text
+                complaint = st.text_area(
+                    "Complaint or case brief",
+                    height=120,
+                    placeholder="Enter the case brief / complaint details here... or upload a file above.",
+                    key="complaint_input",
+                    disabled=False,
+                    label_visibility="visible"
+                )
 
-        with col_input2:
-            st.write("")
-            st.write("")
-            if st.button("⚖️ Begin Simulation", type="primary", use_container_width=True):
-                current_complaint = st.session_state.get("complaint_input", "")
-                if not current_complaint.strip():
-                    st.warning("Please enter a complaint or upload a file.")
-                    st.stop()
+            with col_input2:
+                st.write("")
+                st.write("")
+                if st.button("⚖️ Begin Simulation", type="primary", use_container_width=True):
+                    # Use uploaded content if available, otherwise use manual input
+                    current_complaint = st.session_state.get("uploaded_complaint") or st.session_state.get("complaint_input", "")
+                    if not current_complaint.strip():
+                        st.warning("Please enter a complaint or upload a file.")
+                        st.stop()
 
-                st.session_state.case_state = dict(EMPTY_CASE_STATE)
-                st.session_state.case_state["complaint"] = current_complaint
-                st.session_state.case_state["is_running"] = True
-                st.session_state.simulation_complete = False
-                st.session_state.stream_iter = None
-                st.rerun()
+                    st.session_state.case_state = dict(EMPTY_CASE_STATE)
+                    st.session_state.case_state["complaint"] = current_complaint
+                    st.session_state.case_state["is_running"] = True
+                    st.session_state.simulation_complete = False
+                    st.session_state.stream_iter = None
+                    st.rerun()
 
     # ============================================
     # STATUS INDICATOR
     # ============================================
     if st.session_state.case_state["is_running"]:
         st.markdown('<div class="status-text"><span class="gold">⚖️</span> Court is in session... Arguments are being exchanged.</div>', unsafe_allow_html=True)
+        # DEBUG
+        with st.expander("🔧 Debug Info"):
+            st.write(f"is_running: {st.session_state.case_state.get('is_running')}")
+            st.write(f"simulation_complete: {st.session_state.simulation_complete}")
+            st.write(f"stream_iter exists: {st.session_state.stream_iter is not None}")
     elif st.session_state.simulation_complete:
         st.markdown('<div class="status-text"><span class="gold">✅</span> The Hon\'ble Judge has delivered the final verdict.</div>', unsafe_allow_html=True)
     else:
         st.markdown('<div class="status-text">🏛️ Enter a case brief and begin the simulation.</div>', unsafe_allow_html=True)
-
-    # ============================================
-    # COMPLAINT DISPLAY
-    # ============================================
-    if st.session_state.case_state.get("complaint"):
-        st.markdown(f"""
-        <div class="complaint-box">
-            <div class="label">📋 Case Brief</div>
-            <div class="text">{esc(st.session_state.case_state.get("complaint"))}</div>
-        </div>
-        """, unsafe_allow_html=True)
 
     st.markdown('<div class="gold-divider"></div>', unsafe_allow_html=True)
 
@@ -1184,34 +1188,83 @@ with tab_simulation:
     # STREAMING ENGINE (INCREMENTAL UPDATES)
     # ============================================
     if st.session_state.case_state.get("is_running") and not st.session_state.simulation_complete:
+        progress_placeholder = st.empty()
+        progress_placeholder.info("🔄 Streaming simulation events...")
+        
         if st.session_state.stream_iter is None:
             initial_state = dict(EMPTY_CASE_STATE)
             initial_state["complaint"] = st.session_state.case_state["complaint"]
             initial_state.pop("is_running", None)
 
-            st.session_state.stream_iter = court_graph.stream(
-                initial_state,
-                stream_mode="updates"
-            )
+            try:
+                progress_placeholder.info("📊 Initializing graph stream...")
+                print("[STREAM] Initializing graph.stream()")
+                st.session_state.stream_iter = court_graph.stream(
+                    initial_state,
+                    stream_mode="updates"
+                )
+                print("[STREAM] ✅ Stream initialized")
+            except Exception as e:
+                progress_placeholder.error(f"❌ Error initializing stream: {e}")
+                import traceback
+                st.error(traceback.format_exc())
+                st.session_state.case_state["is_running"] = False
+                st.session_state.stream_iter = None
+                st.rerun()
 
         try:
             node_start_time = time.time()
+            print("[STREAM] Calling next() on stream_iter...")
             event = next(st.session_state.stream_iter)
+            print(f"[STREAM] Got event: {event}")
+            
+            # Log which node(s) are being processed
+            node_names = list(event.keys())
+            print(f"🔄 Processing node(s): {node_names}")
+            progress_placeholder.info(f"🔄 Running: {', '.join(node_names)}")
+            
             for node_name, partial in event.items():
                 node_elapsed = time.time() - node_start_time
                 st.session_state.node_times[node_name] = node_elapsed
-                
-                for key, value in partial.items():
-                    if value is not None:
-                        st.session_state.case_state[key] = value
+                print(f"  ✅ {node_name}: {node_elapsed:.2f}s - keys: {list(partial.keys())}")
+            
+                # Safely update state
+                try:
+                    for key, value in partial.items():
+                        if value is not None:
+                            st.session_state.case_state[key] = value
+                except Exception as e:
+                    print(f"  ⚠️  Error updating state for {node_name}: {e}")
+                    raise
+            
+            print("[STREAM] About to rerun after processing event")
             st.rerun()
+            
         except StopIteration:
+            print("✅ Stream completed successfully (StopIteration)")
+            progress_placeholder.success("✅ Simulation completed!")
             st.session_state.simulation_complete = True
             st.session_state.case_state["is_running"] = False
             st.session_state.stream_iter = None
             st.rerun()
+            
+        except TimeoutError as e:
+            print(f"⏱️  TIMEOUT: {e}")
+            progress_placeholder.error(f"⏱️ Timeout: Node took too long")
+            st.error(f"Node processing timed out: {e}")
+            st.session_state.case_state["is_running"] = False
+            st.session_state.stream_iter = None
+            st.rerun()
+            
         except Exception as e:
-            st.error(f"Simulation error: {e}")
+            print(f"❌ STREAMING ERROR: {e}")
+            import traceback
+            error_msg = traceback.format_exc()
+            print(error_msg)
+            progress_placeholder.error(f"❌ Error: {str(e)[:100]}")
+            st.error(f"Error: {e}")
+            with st.expander("📋 Full Error Details"):
+                st.code(error_msg)
             st.session_state.case_state["is_running"] = False
             st.session_state.stream_iter = None
             st.rerun()
@@ -1234,7 +1287,7 @@ with tab_simulation:
 
         if "metrics_recorded" not in st.session_state:
             st.session_state.metrics_recorded = False
-        
+    
         if not st.session_state.metrics_recorded:
             metrics = st.session_state.evaluator.evaluate_case(
                 st.session_state.case_state,
@@ -1242,7 +1295,7 @@ with tab_simulation:
             )
             st.session_state.metrics_recorded = True
             st.success(f"✅ Case evaluated. Quality Score: {metrics.overall_quality_score:.1f}/100")
-        
+    
         s = st.session_state.case_state
         report_content = _build_report_content(s)
 
@@ -1270,6 +1323,8 @@ with tab_simulation:
                 st.session_state.stream_iter = None
                 st.session_state.node_times = {}
                 st.session_state.metrics_recorded = False
+                st.session_state.complaint_input = ""
+                st.session_state.uploaded_complaint = ""
                 st.rerun()
 
 # ============================================

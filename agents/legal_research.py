@@ -94,33 +94,53 @@ Do not invent facts.
 Do not argue guilt.
 Do not give conclusions.
 Only identify applicable law.
+
+OUTPUT CONSTRAINTS
+
+• Identify ONLY the 3-4 most relevant statutory sections (omit marginally applicable ones).
+• For each section, provide ONE brief sentence of relevance (not detailed explanations).
+• Include at most 2-3 precedents (prioritize recent & binding ones only).
+• Keep evidentiary_notes to 2-3 key points maximum.
+• Keep unsettled_questions brief if included (optional).
 """
 
 
 def run_legal_research(state: CourtState) -> dict:
+    # Truncate complaint more aggressively to avoid token limits
+    MAX_COMPLAINT_CHARS = 1500
+    complaint = state['complaint']
+    if len(complaint) > MAX_COMPLAINT_CHARS:
+        complaint = complaint[:MAX_COMPLAINT_CHARS] + "\n\n[... truncated ...]"
+    
+    # Truncate facts list to first 3 only
+    facts_for_search = state.get('facts', [])[:3]
+    
     # Perform web searches to enrich the research with current precedents and laws
     laws_search = search_applicable_laws(state['offence'], state.get('allegation', ''))
+    # Limit to first 2000 chars of web search results
+    laws_search = laws_search[:2000] if laws_search else ""
+    
     precedents_search = search_legal_precedents(
-        " ".join(state['facts'][:2]) if state.get('facts') else state['complaint'],
+        " ".join(facts_for_search) if facts_for_search else complaint[:500],
         state['offence']
     )
-    evidence_search = search_evidentiary_requirements(state['offence'], state.get('facts', []))
+    # Limit to first 1500 chars
+    precedents_search = precedents_search[:1500] if precedents_search else ""
+    
+    evidence_search = search_evidentiary_requirements(state['offence'], facts_for_search)
+    # Limit to first 1000 chars
+    evidence_search = evidence_search[:1000] if evidence_search else ""
     
     user = f"""
-Complaint:
-{state['complaint']}
+Complaint (key facts only):
+{complaint}
 
-Accused:
-{state['accused']}
-
-Victim:
-{state['victim']}
-
-Alleged Offence:
-{state['offence']}
+Accused: {state['accused']}
+Victim: {state['victim']}
+Alleged Offence: {state['offence']}
 
 Facts:
-{state['facts']}
+{chr(10).join(f'- {f}' for f in facts_for_search) if facts_for_search else 'None provided'}
 
 ---
 
@@ -137,7 +157,7 @@ WEB SEARCH CONTEXT (Use to enhance research):
 Based on the facts, web search results, and your legal expertise, identify the applicable laws, relevant precedents, and evidentiary requirements.
 """
 
-    result: LegalResearch = call_structured(SYSTEM, user, LegalResearch)
+    result: LegalResearch = call_structured(SYSTEM, user, LegalResearch, max_tokens=1500)
 
     # ── Reconstruct readable text blocks ────────────────────────────
     # Downstream agents (prosecutor, defense, judge) interpolate

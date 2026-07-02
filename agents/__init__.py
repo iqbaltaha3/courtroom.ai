@@ -1,5 +1,6 @@
 import os
 import json
+import time
 from dotenv import load_dotenv
 from groq import Groq
 from pydantic import BaseModel
@@ -20,21 +21,23 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 T = TypeVar("T", bound=BaseModel)
 
 
-def call_claude(system: str, user: str) -> str:
+def call_claude(system: str, user: str, max_tokens: int = 1000) -> str:
     """Plain-text call for prose output.
     Uses lightweight model for speed and token efficiency.
-    For agents: prosecutor, defense, reporter, consultant."""
+    For agents: prosecutor, defense, reporter, consultant.
+    max_tokens controls output length (default 1000 for brevity)."""
     response = client.chat.completions.create(
         model=MODEL_PROSE,
         messages=[
             {"role": "system", "content": system},
             {"role": "user", "content": user},
-        ]
+        ],
+        max_tokens=max_tokens,
     )
     return response.choices[0].message.content.strip()
 
 
-def call_structured(system: str, user: str, schema: Type[T], retries: int = 1, use_complex_model: bool = False) -> T:
+def call_structured(system: str, user: str, schema: Type[T], retries: int = 3, use_complex_model: bool = False, max_tokens: int = 2000) -> T:
     """Structured call using json_schema for strict schema enforcement.
     
     Automatically selects model based on schema complexity:
@@ -42,7 +45,8 @@ def call_structured(system: str, user: str, schema: Type[T], retries: int = 1, u
     - COMPLEX_STRUCT (openai/gpt-oss-120b) for schemas with nested Pydantic models ($defs)
     - Override with use_complex_model=True to force COMPLEX_STRUCT
     
-    Retries once on validation failure before propagating the error.
+    Handles rate limits with exponential backoff retry logic (3 attempts by default).
+    max_tokens controls output length (default 2000).
     """
     # Extract the JSON schema from the Pydantic model
     pydantic_schema = schema.model_json_schema()
@@ -64,7 +68,7 @@ def call_structured(system: str, user: str, schema: Type[T], retries: int = 1, u
         full_schema["$defs"] = pydantic_schema["$defs"]
     
     last_error = None
-    for attempt in range(retries + 1):
+    for attempt in range(retries):
         try:
             response = client.chat.completions.create(
                 model=model,
@@ -80,10 +84,22 @@ def call_structured(system: str, user: str, schema: Type[T], retries: int = 1, u
                     }
                 },
                 temperature=0.0,
+                max_tokens=max_tokens,
             )
             
             return schema.model_validate_json(response.choices[0].message.content)
         except Exception as e:
             last_error = e
+            error_code = getattr(e, 'code', None)
+            
+            # Handle rate limit errors with exponential backoff
+            if error_code == 'rate_limit_exceeded' and attempt < retries - 1:
+                wait_time = 2 ** attempt  # 1s, 2s, 4s
+                print(f"[RATE_LIMIT] Attempt {attempt + 1}/{retries} failed, waiting {wait_time}s...")
+                time.sleep(wait_time)
+                continue
+            
+            # If not a rate limit error or last attempt, break
+            break
     
     raise last_error
