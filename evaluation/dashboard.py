@@ -15,8 +15,8 @@ def show_evaluation_dashboard():
     st.markdown("""
     <div style="background: linear-gradient(135deg, #111116 0%, #0d0d12 100%); 
                 padding: 20px; border-radius: 8px; border-left: 4px solid #d4af37; margin-bottom: 20px;">
-        <h2 style="color: #ffffff; margin: 0;">📊 System Evaluation Dashboard</h2>
-        <p style="color: #a0a0a0; margin: 5px 0 0 0;">AI Courtroom Performance Analytics</p>
+        <h2 style="color: #ffffff; margin: 0;">System Evaluation Dashboard</h2>
+        <p style="color: #a0a0a0; margin: 5px 0 0 0;">AI Case Performance Analytics</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -24,11 +24,11 @@ def show_evaluation_dashboard():
     all_metrics = collector.get_all_metrics()
     
     if not all_metrics:
-        st.info("📈 No evaluation data yet. Run simulations to start collecting metrics.")
+        st.info("No evaluation data yet. Run simulations to start collecting metrics.")
         return
     
     # Summary statistics
-    st.markdown("### 📈 Summary Statistics")
+    st.markdown("### Summary Statistics")
     
     col1, col2, col3, col4 = st.columns(4)
     
@@ -48,7 +48,7 @@ def show_evaluation_dashboard():
         st.metric("Guilty Verdicts", guilty_count)
     
     # Quality Score Trend
-    st.markdown("### 📊 Quality Score Trend")
+    st.markdown("### Quality Score Trend")
     
     df_quality = pd.DataFrame({
         "Case #": range(1, len(all_metrics) + 1),
@@ -78,7 +78,7 @@ def show_evaluation_dashboard():
     st.plotly_chart(fig_trend, use_container_width=True)
     
     # Component Quality Breakdown
-    st.markdown("### 🔍 Component Quality Breakdown")
+    st.markdown("### Component Quality Breakdown")
     
     avg_scores = collector.get_average_metrics(all_metrics)
     
@@ -101,7 +101,7 @@ def show_evaluation_dashboard():
     st.plotly_chart(fig_components, use_container_width=True)
     
     # Verdict Distribution
-    st.markdown("### ⚖️ Verdict Distribution")
+    st.markdown("### Verdict Distribution")
     
     verdict_counts = {}
     for m in all_metrics:
@@ -122,7 +122,7 @@ def show_evaluation_dashboard():
     st.plotly_chart(fig_verdicts, use_container_width=True)
     
     # Performance Timeline
-    st.markdown("### ⏱️ Execution Performance")
+    st.markdown("### Execution Performance")
     
     df_perf = pd.DataFrame({
         "Case": range(1, len(all_metrics) + 1),
@@ -153,7 +153,7 @@ def show_evaluation_dashboard():
     st.plotly_chart(fig_perf, use_container_width=True)
     
     # Recent Cases Detail
-    st.markdown("### 📋 Recent Cases")
+    st.markdown("### Recent Cases")
     
     recent = collector.get_recent_metrics(10)
     recent_data = []
@@ -172,7 +172,7 @@ def show_evaluation_dashboard():
     st.dataframe(pd.DataFrame(recent_data), use_container_width=True)
     
     # Confidence Calibration Analysis
-    st.markdown("### 🎯 Confidence Calibration")
+    st.markdown("### Confidence Calibration")
     
     df_conf = pd.DataFrame({
         "Case": range(1, len(all_metrics) + 1),
@@ -206,15 +206,15 @@ def show_evaluation_dashboard():
     st.plotly_chart(fig_conf, use_container_width=True)
     
     # Export options
-    st.markdown("### 💾 Export Data")
+    st.markdown("### Export Data")
     
     col1, col2 = st.columns(2)
     
     with col1:
-        if st.button("📥 Export Metrics as CSV"):
+        if st.button("Export Metrics as CSV"):
             collector.export_csv()
             st.success("Metrics exported to `evaluation/metrics_export.csv`")
     
     with col2:
-        if st.button("🔄 Refresh Dashboard"):
+        if st.button("Refresh Dashboard"):
             st.rerun()

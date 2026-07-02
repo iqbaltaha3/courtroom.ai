@@ -13,7 +13,7 @@ from auth import authenticate, submit_access_request
 # PAGE CONFIG
 # ============================================
 st.set_page_config(
-    page_title="Courtroom AI - Legal Simulation",
+    page_title="Nyaya Mitra - Intelligence for India's Legal Profession",
     page_icon="⚖",
     layout="wide"
 )
@@ -481,6 +481,29 @@ st.markdown("""
         white-space: pre-wrap;
     }
 
+    /* -------------------- CHARACTER COUNTER & FILE FEEDBACK -------------------- */
+    .char-counter {
+        font-size: 12px;
+        color: #7f8c8d;
+        text-align: right;
+        margin-top: 0.3rem;
+    }
+    .char-counter.good { color: #27ae60; font-weight: 600; }
+    .char-counter.warning { color: #f39c12; font-weight: 600; }
+    
+    .upload-feedback {
+        background: #f0f8f0;
+        border-left: 4px solid #27ae60;
+        padding: 0.8rem;
+        border-radius: 4px;
+        margin: 1rem 0;
+        font-size: 13px;
+        color: #27ae60;
+    }
+    .upload-feedback .filename {
+        font-weight: 600;
+    }
+
     /* -------------------- RESPONSIVE -------------------- */
     @media (max-width: 768px) {
         .judge-container { flex-direction: column; gap: 0.5rem; text-align: center; }
@@ -508,7 +531,7 @@ def esc(text) -> str:
 
 def _build_report_content(state: dict) -> str:
     report_lines = []
-    report_lines.append("# ⚖️ Courtroom AI Simulation Report")
+    report_lines.append("# ⚖️ Nyaya Mitra Case Analysis Report")
     report_lines.append(f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     report_lines.append("")
     
@@ -725,8 +748,8 @@ if "uploaded_complaint" not in st.session_state:
 # ============================================
 st.markdown("""
 <div class="court-header">
-    <h1>COURTROOM AI</h1>
-    <p>Legal Simulation Platform · Indian Law</p>
+    <h1>Nyaya Mitra</h1>
+    <p>Intelligence for India's legal profession</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -861,6 +884,10 @@ if not st.session_state.authenticated:
 else:
     # AUTHENTICATED USER - SHOW MAIN APP
     
+    # Initialize selected tool in session state
+    if "selected_tool" not in st.session_state:
+        st.session_state.selected_tool = None
+    
     # Logout button in sidebar
     with st.sidebar:
         if st.button("Sign Out", use_container_width=True):
@@ -877,65 +904,153 @@ else:
     # ============================================
     # TABS & NAVIGATION
     # ============================================
-    tab_simulation, tab_metrics = st.tabs(["Simulation", "Metrics"])
+    tab_tools, tab_metrics, tab_vision = st.tabs(["Tools", "Metrics", "Vision"])
 
 
     # ============================================
-    # TAB 1: SIMULATION
+    # TAB 1: TOOLS
     # ============================================
-    with tab_simulation:
-        # ============================================
-        # INPUT SECTION (hidden during simulation)
-        # ============================================
-        if not st.session_state.case_state.get("is_running"):
-            with st.container():
-                col_input1, col_input2 = st.columns([3, 1])
-                with col_input1:
-                    # UPLOAD HANDLER FIRST (before text_area widget)
-                    uploaded_file = st.file_uploader(
-                        "Or upload a complaint file (.txt, .pdf)",
-                        type=['txt', 'pdf'],
-                        key="complaint_uploader",
-                        disabled=False,
-                        label_visibility="visible"
-                    )
+    with tab_tools:
+        if st.session_state.selected_tool is None:
+            # Tools Dashboard Header
+            st.markdown("""
+            <div style="margin-bottom: 3rem;">
+                <h2 style="margin: 0; color: #2c3e50; font-weight: 700; font-size: 36px;">Tools</h2>
+                <p style="margin: 0.5rem 0 0 0; color: #7f8c8d; font-size: 15px;">Select a tool to get started</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            col1, col2 = st.columns(2, gap="large")
+            
+            # Courtroom Debate Card
+            with col1:
+                st.markdown("""
+                <div style="
+                    background: linear-gradient(135deg, #ffffff 0%, #f9f8f6 100%);
+                    border: 2px solid #8B6F47;
+                    border-radius: 16px;
+                    padding: 40px;
+                    box-shadow: 0 12px 32px rgba(107, 83, 68, 0.15);
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    min-height: 300px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                ">
+                    <div style="text-align: center;">
+                        <div style="font-size: 56px; margin-bottom: 24px;">⚖</div>
+                        <h3 style="margin: 0 0 16px 0; color: #2c3e50; font-size: 28px; font-weight: 700;">Courtroom Debate</h3>
+                        <p style="margin: 0; color: #666; font-size: 15px; line-height: 1.6; max-width: 280px; margin: 0 auto;">
+                            Orchestrated adversarial debate with 8 specialized AI agents analyzing cases in depth
+                        </p>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                if st.button("Start Courtroom Debate", type="primary", use_container_width=True, key="btn_launch_debate"):
+                    st.session_state.selected_tool = "courtroom_simulation"
+                    st.rerun()
+            
+            # Coming Soon Card
+            with col2:
+                st.markdown("""
+                <div style="
+                    background: #f9f8f6;
+                    border: 2px dashed #d4af37;
+                    border-radius: 16px;
+                    padding: 40px;
+                    box-shadow: 0 4px 12px rgba(107, 83, 68, 0.08);
+                    opacity: 0.7;
+                    min-height: 300px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                ">
+                    <div style="text-align: center;">
+                        <div style="font-size: 56px; margin-bottom: 24px;">✨</div>
+                        <h3 style="margin: 0 0 16px 0; color: #999; font-size: 28px; font-weight: 700;">More Coming Soon</h3>
+                        <p style="margin: 0; color: #aaa; font-size: 15px; line-height: 1.6;">
+                            Additional legal AI tools in development
+                        </p>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        elif st.session_state.selected_tool == "courtroom_simulation":
+            # Show simulation tool
+            col_back, col_title = st.columns([1, 10])
+            with col_back:
+                if st.button("← Back to Tools", key="btn_back_tools"):
+                    st.session_state.selected_tool = None
+                    st.rerun()
+            
+            st.markdown("---")
+            
+            # ============================================
+            # INPUT SECTION (hidden during simulation)
+            # ============================================
+            if not st.session_state.case_state.get("is_running"):
+                with st.container():
+                    col_input1, col_input2 = st.columns([3, 1])
+                    with col_input1:
+                        # UPLOAD HANDLER FIRST (before text_area widget)
+                        uploaded_file = st.file_uploader(
+                            "Or upload a complaint file (.txt, .pdf)",
+                            type=['txt', 'pdf'],
+                            key="complaint_uploader",
+                            disabled=False,
+                            label_visibility="visible"
+                        )
 
-                    if uploaded_file is not None:
-                        try:
-                            file_type = uploaded_file.type
-                            text = ""
-                            if file_type == "text/plain":
-                                text = uploaded_file.getvalue().decode("utf-8")
-                            elif file_type == "application/pdf":
-                                try:
-                                    from pypdf import PdfReader
-                                    reader = PdfReader(uploaded_file)
-                                    for page in reader.pages:
-                                        page_text = page.extract_text()
-                                        if page_text:
-                                            text += page_text + "\n"
-                                except ImportError:
-                                    st.error("The 'pypdf' library is required for PDF uploads. Please install it with: pip install pypdf")
-                                    text = ""
-                        
-                            if text:
-                                # Store in a separate variable, NOT in complaint_input
-                                st.session_state.uploaded_complaint = text
-                                # Show confirmation - don't display the full text
-                                st.success(f"✅ File uploaded successfully ({len(text)} characters)")
-                        except Exception as e:
-                            st.error(f"Error reading file: {e}")
+                        if uploaded_file is not None:
+                            try:
+                                file_type = uploaded_file.type
+                                text = ""
+                                if file_type == "text/plain":
+                                    text = uploaded_file.getvalue().decode("utf-8")
+                                elif file_type == "application/pdf":
+                                    try:
+                                        from pypdf import PdfReader
+                                        reader = PdfReader(uploaded_file)
+                                        for page in reader.pages:
+                                            page_text = page.extract_text()
+                                            if page_text:
+                                                text += page_text + "\n"
+                                    except ImportError:
+                                        st.error("The 'pypdf' library is required for PDF uploads. Please install it with: pip install pypdf")
+                                        text = ""
+                            
+                                if text:
+                                    # Store in a separate variable, NOT in complaint_input
+                                    st.session_state.uploaded_complaint = text
+                                    # Show confirmation - don't display the full text
+                                    st.success(f"✅ File uploaded successfully ({len(text)} characters)")
+                            except Exception as e:
+                                st.error(f"Error reading file: {e}")
 
                     # NOW CREATE TEXT_AREA (after session_state is populated)
                     # User can edit manually entered text
                     complaint = st.text_area(
                         "Complaint or case brief",
                         height=120,
-                        placeholder="Enter the case brief / complaint details here... or upload a file above.",
+                        placeholder="Include: who, what, when, where, why (200+ characters)",
                         key="complaint_input",
                         disabled=False,
-                        label_visibility="visible"
+                        label_visibility="visible",
+                        help="Minimum 50 characters for analysis"
                     )
+                    
+                    # Show file feedback
+                    if st.session_state.get("uploaded_complaint"):
+                        file_chars = len(st.session_state.uploaded_complaint)
+                        st.markdown(f'<div class="upload-feedback"><span class="filename">✓ File loaded</span> ({file_chars:,} characters)</div>', unsafe_allow_html=True)
+                    
+                    # Character counter
+                    complaint_text = st.session_state.get("complaint_input", "")
+                    char_count = len(complaint_text)
+                    char_status = "good" if char_count >= 100 else ("warning" if char_count > 0 else "")
+                    st.markdown(f'<div class="char-counter {char_status}">{char_count} characters</div>', unsafe_allow_html=True)
 
                 with col_input2:
                     st.write("")
@@ -944,7 +1059,10 @@ else:
                         # Use uploaded content if available, otherwise use manual input
                         current_complaint = st.session_state.get("uploaded_complaint") or st.session_state.get("complaint_input", "")
                         if not current_complaint.strip():
-                            st.warning("Please enter a complaint or upload a file.")
+                            st.error("Please enter a complaint (minimum 50 characters) or upload a file.")
+                            st.stop()
+                        elif len(current_complaint) < 50:
+                            st.error(f"Complaint too short ({len(current_complaint)}/50 characters). Please add more details.")
                             st.stop()
 
                         st.session_state.case_state = dict(EMPTY_CASE_STATE)
@@ -955,379 +1073,291 @@ else:
                         st.rerun()
 
         # ============================================
-        # STATUS INDICATOR
+        # STATUS INDICATOR WITH CONTEXTUAL MESSAGES
         # ============================================
         if st.session_state.case_state["is_running"]:
-            st.markdown('<div class="status-text"><span class="gold">Court is in session. Arguments being exchanged.</span></div>', unsafe_allow_html=True)
-            # DEBUG
-            with st.expander("🔧 Debug Info"):
-                st.write(f"is_running: {st.session_state.case_state.get('is_running')}")
-                st.write(f"simulation_complete: {st.session_state.simulation_complete}")
-                st.write(f"stream_iter exists: {st.session_state.stream_iter is not None}")
+            # Determine current stage based on what's been completed
+            if st.session_state.case_state.get("judge_verdict"):
+                stage = "Finalizing report..."
+            elif st.session_state.case_state.get("def_r2"):
+                stage = "Judge deliberating..."
+            elif st.session_state.case_state.get("pros_r2"):
+                stage = "Defense responding..."
+            elif st.session_state.case_state.get("def_r1"):
+                stage = "Prosecution rebuttal..."
+            elif st.session_state.case_state.get("pros_r1"):
+                stage = "Defense presenting arguments..."
+            elif st.session_state.case_state.get("legal_research"):
+                stage = "Building case arguments..."
+            elif st.session_state.case_state.get("case_intake"):
+                stage = "Researching applicable laws..."
+            else:
+                stage = "Analyzing case facts..."
+            st.markdown(f'<div class="status-text"><span class="gold">{stage}</span></div>', unsafe_allow_html=True)
         elif st.session_state.simulation_complete:
-            st.markdown('<div class="status-text"><span class="gold">Verdict delivered. Simulation complete.</span></div>', unsafe_allow_html=True)
+            st.markdown('<div class="status-text"><span class="gold">Simulation complete. Review results below.</span></div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div class="status-text">🏛️ Enter a case brief and begin the simulation.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="status-text">Enter a case brief and click Begin Simulation to start.</div>', unsafe_allow_html=True)
 
         st.markdown('<div class="gold-divider"></div>', unsafe_allow_html=True)
 
         # ============================================
-        # ROW 1: CASE MANAGER | LEGAL RESEARCH | CONSULTANT
+        # COLLAPSIBLE AGENT SECTIONS
         # ============================================
         col_cm, col_lr, col_cons = st.columns(3, gap="large")
 
         with col_cm:
-            st.markdown("""
-            <div class="top-card">
-                <h4>📂 Case Manager</h4>
-            """, unsafe_allow_html=True)
+            with st.expander("Case Manager", expanded=True):
+                case_intake = st.session_state.case_state.get("case_intake")
 
-            case_intake = st.session_state.case_state.get("case_intake")
+                if case_intake:
+                    accused = case_intake.get("accused")
+                    victim = case_intake.get("victim")
+                    offences = case_intake.get("offences")
+                    allegation = case_intake.get("allegation")
+                    jurisdiction = case_intake.get("jurisdiction")
+                    facts_list = case_intake.get("facts") or []
+                    missing_list = case_intake.get("missing_information") or []
 
-            if case_intake:
-                accused = case_intake.get("accused")
-                victim = case_intake.get("victim")
-                offences = case_intake.get("offences")
-                allegation = case_intake.get("allegation")
-                jurisdiction = case_intake.get("jurisdiction")
-                facts_list = case_intake.get("facts") or []
-                missing_list = case_intake.get("missing_information") or []
-
-                if accused:
-                    st.markdown(f'<div class="item"><strong>Accused:</strong> <span class="value">{esc(accused)}</span></div>', unsafe_allow_html=True)
-                if victim:
-                    st.markdown(f'<div class="item"><strong>Victim:</strong> <span class="value">{esc(victim)}</span></div>', unsafe_allow_html=True)
-                if offences:
-                    st.markdown(f'<div class="item"><strong>Offences:</strong> <span class="value">{esc(offences)}</span></div>', unsafe_allow_html=True)
-                if allegation:
-                    st.markdown(f'<div class="item"><strong>Allegation:</strong> <span class="value">{esc(allegation)}</span></div>', unsafe_allow_html=True)
-                if jurisdiction:
-                    st.markdown(f'<div class="item"><strong>Jurisdiction:</strong> <span class="value">{esc(jurisdiction)}</span></div>', unsafe_allow_html=True)
-
-                if facts_list:
-                    st.markdown('<div class="sublabel">Material Facts</div>', unsafe_allow_html=True)
-                    items = "".join(f"<li>{esc(f)}</li>" for f in facts_list)
-                    st.markdown(f'<ul class="bullet-list">{items}</ul>', unsafe_allow_html=True)
-
-                if missing_list:
-                    st.markdown('<div class="sublabel">Missing Information</div>', unsafe_allow_html=True)
-                    items = "".join(f"<li>{esc(m)}</li>" for m in missing_list)
-                    st.markdown(f'<ul class="bullet-list missing">{items}</ul>', unsafe_allow_html=True)
-
-            else:
-                accused = st.session_state.case_state.get("accused")
-                victim = st.session_state.case_state.get("victim")
-                offence = st.session_state.case_state.get("offence")
-                facts = st.session_state.case_state.get("facts")
-
-                if accused or victim or offence:
                     if accused:
                         st.markdown(f'<div class="item"><strong>Accused:</strong> <span class="value">{esc(accused)}</span></div>', unsafe_allow_html=True)
                     if victim:
                         st.markdown(f'<div class="item"><strong>Victim:</strong> <span class="value">{esc(victim)}</span></div>', unsafe_allow_html=True)
-                    if offence:
-                        st.markdown(f'<div class="item"><strong>Offence:</strong> <span class="value">{esc(offence)}</span></div>', unsafe_allow_html=True)
-                    if facts:
-                        st.markdown(f'<div class="item"><strong>Facts:</strong> <span class="value">{esc(facts)}</span></div>', unsafe_allow_html=True)
-                else:
-                    st.markdown('<div class="empty">Awaiting case analysis...</div>', unsafe_allow_html=True)
+                    if offences:
+                        st.markdown(f'<div class="item"><strong>Offences:</strong> <span class="value">{esc(offences)}</span></div>', unsafe_allow_html=True)
+                    if allegation:
+                        st.markdown(f'<div class="item"><strong>Allegation:</strong> <span class="value">{esc(allegation)}</span></div>', unsafe_allow_html=True)
+                    if jurisdiction:
+                        st.markdown(f'<div class="item"><strong>Jurisdiction:</strong> <span class="value">{esc(jurisdiction)}</span></div>', unsafe_allow_html=True)
 
-            st.markdown('</div>', unsafe_allow_html=True)
+                    if facts_list:
+                        st.markdown('<div class="sublabel">Material Facts</div>', unsafe_allow_html=True)
+                        items = "".join(f"<li>{esc(f)}</li>" for f in facts_list)
+                        st.markdown(f'<ul class="bullet-list">{items}</ul>', unsafe_allow_html=True)
+
+                    if missing_list:
+                        st.markdown('<div class="sublabel">Missing Information</div>', unsafe_allow_html=True)
+                        items = "".join(f"<li>{esc(m)}</li>" for m in missing_list)
+                        st.markdown(f'<ul class="bullet-list missing">{items}</ul>', unsafe_allow_html=True)
+
+                else:
+                    st.info("Analyzing case details...")
 
         with col_lr:
-            st.markdown("""
-            <div class="top-card">
-                <h4>📚 Legal Research</h4>
-            """, unsafe_allow_html=True)
+            with st.expander("Legal Research", expanded=True):
+                legal_research = st.session_state.case_state.get("legal_research")
 
-            legal_research = st.session_state.case_state.get("legal_research")
+                if legal_research:
+                    sections = legal_research.get("applicable_sections") or []
+                    precedents = legal_research.get("precedents") or []
+                    evidentiary_notes = legal_research.get("evidentiary_notes") or []
+                    unsettled = legal_research.get("unsettled_questions") or []
 
-            if legal_research:
-                sections = legal_research.get("applicable_sections") or []
-                precedents = legal_research.get("precedents") or []
-                evidentiary_notes = legal_research.get("evidentiary_notes") or []
-                unsettled = legal_research.get("unsettled_questions") or []
+                    if sections:
+                        st.markdown('<div class="sublabel">Applicable Sections</div>', unsafe_allow_html=True)
+                        for s in sections:
+                            st.markdown(f"""
+                            <div class="law-card">
+                                <div class="title">{esc(s.get('section'))} — {esc(s.get('act'))}</div>
+                                <div class="relevance">{esc(s.get('relevance'))}</div>
+                            </div>
+                            """, unsafe_allow_html=True)
 
-                if sections:
-                    st.markdown('<div class="sublabel">Applicable Sections</div>', unsafe_allow_html=True)
-                    for s in sections:
-                        st.markdown(f"""
-                        <div class="law-card">
-                            <div class="title">{esc(s.get('section'))} — {esc(s.get('act'))}</div>
-                            <div class="relevance">{esc(s.get('relevance'))}</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                    if precedents:
+                        st.markdown('<div class="sublabel">Precedents</div>', unsafe_allow_html=True)
+                        for p in precedents:
+                            st.markdown(f"""
+                            <div class="law-card">
+                                <div class="title">{esc(p.get('case_name'))}</div>
+                                <div class="meta">{esc(p.get('court'))} · {esc(p.get('year'))}</div>
+                                <div class="relevance">{esc(p.get('relevance'))}</div>
+                            </div>
+                            """, unsafe_allow_html=True)
 
-                if precedents:
-                    st.markdown('<div class="sublabel">Precedents</div>', unsafe_allow_html=True)
-                    for p in precedents:
-                        st.markdown(f"""
-                        <div class="law-card">
-                            <div class="title">{esc(p.get('case_name'))}</div>
-                            <div class="meta">{esc(p.get('court'))} · {esc(p.get('year'))}</div>
-                            <div class="relevance">{esc(p.get('relevance'))}</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                    if evidentiary_notes:
+                        st.markdown('<div class="sublabel">Evidentiary Notes</div>', unsafe_allow_html=True)
+                        items = "".join(f"<li>{esc(n)}</li>" for n in evidentiary_notes)
+                        st.markdown(f'<ul class="bullet-list">{items}</ul>', unsafe_allow_html=True)
 
-                if evidentiary_notes:
-                    st.markdown('<div class="sublabel">Evidentiary Notes</div>', unsafe_allow_html=True)
-                    items = "".join(f"<li>{esc(n)}</li>" for n in evidentiary_notes)
-                    st.markdown(f'<ul class="bullet-list">{items}</ul>', unsafe_allow_html=True)
+                    if unsettled:
+                        st.markdown('<div class="sublabel">Unsettled Questions</div>', unsafe_allow_html=True)
+                        items = "".join(f"<li>{esc(q)}</li>" for q in unsettled)
+                        st.markdown(f'<ul class="bullet-list">{items}</ul>', unsafe_allow_html=True)
 
-                if unsettled:
-                    st.markdown('<div class="sublabel">Unsettled Questions</div>', unsafe_allow_html=True)
-                    items = "".join(f"<li>{esc(q)}</li>" for q in unsettled)
-                    st.markdown(f'<ul class="bullet-list">{items}</ul>', unsafe_allow_html=True)
-
-                if not (sections or precedents or evidentiary_notes or unsettled):
-                    st.markdown('<div class="empty">No applicable law identified.</div>', unsafe_allow_html=True)
-
-            else:
-                laws = st.session_state.case_state.get("laws")
-                sections_txt = st.session_state.case_state.get("sections_applied")
-                precedents_txt = st.session_state.case_state.get("precedents")
-
-                if laws or sections_txt or precedents_txt:
-                    if laws and laws != "Not specified":
-                        st.markdown(f'<div class="item"><strong>Laws:</strong> <span class="value">{esc(laws)}</span></div>', unsafe_allow_html=True)
-                    if sections_txt and sections_txt != "Not specified":
-                        st.markdown(f'<div class="item"><strong>Sections:</strong> <span class="value">{esc(sections_txt)}</span></div>', unsafe_allow_html=True)
-                    if precedents_txt and precedents_txt != "Not specified":
-                        st.markdown(f'<div class="item"><strong>Precedents:</strong> <span class="value">{esc(precedents_txt)}</span></div>', unsafe_allow_html=True)
-                else:
-                    st.markdown('<div class="empty">Researching applicable laws...</div>', unsafe_allow_html=True)
-
-            st.markdown('</div>', unsafe_allow_html=True)
+                    if not (sections or precedents or evidentiary_notes or unsettled):
+                        st.info("No applicable laws identified yet.")
+                
+                if not legal_research:
+                    st.info("Researching applicable laws...")
 
         with col_cons:
-            st.markdown("""
-            <div class="top-card">
-                <h4>🧭 Internal Consultant</h4>
-            """, unsafe_allow_html=True)
-
-            consultant = st.session_state.case_state.get("consultant")
-            if consultant:
-                st.markdown(f'<div class="item"><span class="value">{esc(consultant)}</span></div>', unsafe_allow_html=True)
-            else:
-                st.markdown('<div class="empty">Awaiting internal consultant review...</div>', unsafe_allow_html=True)
-
-            st.markdown('</div>', unsafe_allow_html=True)
+            with st.expander("Internal Consultant", expanded=True):
+                consultant = st.session_state.case_state.get("consultant")
+                if consultant:
+                    st.markdown(f'<div class="item"><span class="value">{esc(consultant)}</span></div>', unsafe_allow_html=True)
+                else:
+                    st.info("Analyzing case strategy...")
 
         # ============================================
-        # ROW 2: JUDGE (Full Width)
+        # ROW 2: JUDGE VERDICT (Collapsible)
         # ============================================
         judge_verdict = st.session_state.case_state.get("judge_verdict")
         verdict_short = st.session_state.case_state.get("verdict_short")
         confidence = st.session_state.case_state.get("confidence")
 
-        if not verdict_short:
-            st.markdown("""
-            <div class="judge-container">
-                <span class="label">👨‍⚖️ The Hon'ble Judge</span><br>
-                <span style="color: #666666; font-size: 18px;">Deliberating on the case...</span>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            v_lower = str(verdict_short).lower()
-            if "not guilty" in v_lower:
-                verdict_color = "verdict-green"
-                status_text = "NOT GUILTY"
-            elif "partially" in v_lower:
-                verdict_color = "verdict-amber"
-                status_text = "PARTIALLY LIABLE"
-            elif "guilty" in v_lower:
-                verdict_color = "verdict-red"
-                status_text = "GUILTY"
+        with st.expander("Judge Verdict", expanded=True):
+            if not verdict_short:
+                st.markdown("""
+                <div class="judge-container">
+                    <span class="label">The Hon'ble Judge</span><br>
+                    <span style="color: #666666; font-size: 18px;">Deliberating on the case...</span>
+                </div>
+                """, unsafe_allow_html=True)
             else:
-                verdict_color = "verdict-amber"
-                status_text = esc(verdict_short).upper()
+                v_lower = str(verdict_short).lower()
+                if "not guilty" in v_lower:
+                    verdict_color = "verdict-green"
+                    status_text = "NOT GUILTY"
+                elif "partially" in v_lower:
+                    verdict_color = "verdict-amber"
+                    status_text = "PARTIALLY LIABLE"
+                elif "guilty" in v_lower:
+                    verdict_color = "verdict-red"
+                    status_text = "GUILTY"
+                else:
+                    verdict_color = "verdict-amber"
+                    status_text = esc(verdict_short).upper()
 
-            st.markdown(f"""
-            <div class="judge-container">
-                <span class="label">👨‍⚖️ The Hon'ble Judge</span><br>
-                <span class="verdict-text {verdict_color}">{status_text}</span><br>
-                <span style="color: #aaaaaa; font-size: 16px;">{esc(verdict_short)}</span><br>
-                <span class="confidence">Confidence {esc(confidence)}%</span>
-            </div>
-            """, unsafe_allow_html=True)
-
-        if judge_verdict:
-            findings = judge_verdict.get("findings")
-            pros_assessment = judge_verdict.get("prosecution_assessment")
-            def_assessment = judge_verdict.get("defense_assessment")
-            reasoning = judge_verdict.get("reasoning")
-            sections_applied_list = judge_verdict.get("sections_applied") or []
-            probable_punishment = judge_verdict.get("probable_punishment")
-
-            if findings or pros_assessment or def_assessment:
-                st.markdown('<div class="verdict-grid">', unsafe_allow_html=True)
-                if findings:
-                    st.markdown(f"""
-                    <div class="verdict-field">
-                        <span class="label">Findings</span>
-                        <div class="content">{esc(findings)}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                if pros_assessment:
-                    st.markdown(f"""
-                    <div class="verdict-field">
-                        <span class="label">Prosecution Assessment</span>
-                        <div class="content">{esc(pros_assessment)}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                if def_assessment:
-                    st.markdown(f"""
-                    <div class="verdict-field">
-                        <span class="label">Defense Assessment</span>
-                        <div class="content">{esc(def_assessment)}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                if probable_punishment:
-                    st.markdown(f"""
-                    <div class="verdict-field">
-                        <span class="label">Probable Punishment</span>
-                        <div class="content">{esc(probable_punishment)}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                st.markdown('</div>', unsafe_allow_html=True)
-
-            if sections_applied_list:
-                pills = "".join(f'<span class="sections-pill">{esc(s)}</span>' for s in sections_applied_list)
                 st.markdown(f"""
-                <div class="verdict-reasoning">
-                    <span class="label">Sections Applied</span>
-                    <div class="sections-pill-row">{pills}</div>
+                <div class="judge-container">
+                    <span class="label">The Hon'ble Judge</span><br>
+                    <span class="verdict-text {verdict_color}">{status_text}</span><br>
+                    <span style="color: #aaaaaa; font-size: 16px;">{esc(verdict_short)}</span><br>
+                    <span class="confidence">Confidence {esc(confidence)}%</span>
                 </div>
                 """, unsafe_allow_html=True)
 
-            if reasoning:
-                st.markdown(f"""
-                <div class="verdict-reasoning">
-                    <span class="label">📜 Reasoning</span>
-                    <div class="content">{esc(reasoning)}</div>
-                </div>
-                """, unsafe_allow_html=True)
+            if judge_verdict:
+                findings = judge_verdict.get("findings")
+                pros_assessment = judge_verdict.get("prosecution_assessment")
+                def_assessment = judge_verdict.get("defense_assessment")
+                reasoning = judge_verdict.get("reasoning")
+                sections_applied_list = judge_verdict.get("sections_applied") or []
+                probable_punishment = judge_verdict.get("probable_punishment")
 
-        else:
-            full_reasoning = st.session_state.case_state.get("verdict", "")
-            if full_reasoning and "Error" not in full_reasoning:
-                st.markdown(f"""
-                <div class="verdict-reasoning">
-                    <span class="label">📜 Full Verdict &amp; Reasoning</span>
-                    <div class="content">{esc(full_reasoning)}</div>
-                </div>
-                """, unsafe_allow_html=True)
-            elif verdict_short:
-                st.markdown(f"""
-                <div class="verdict-reasoning">
-                    <span class="label">📜 Verdict Summary</span>
-                    <div class="content">{esc(verdict_short)}</div>
-                </div>
-                """, unsafe_allow_html=True)
+                if findings or pros_assessment or def_assessment:
+                    st.markdown('<div class="verdict-grid">', unsafe_allow_html=True)
+                    if findings:
+                        st.markdown(f"""
+                        <div class="verdict-field">
+                            <span class="label">Findings</span>
+                            <div class="content">{esc(findings)}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    if pros_assessment:
+                        st.markdown(f"""
+                        <div class="verdict-field">
+                            <span class="label">Prosecution Assessment</span>
+                            <div class="content">{esc(pros_assessment)}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    if def_assessment:
+                        st.markdown(f"""
+                        <div class="verdict-field">
+                            <span class="label">Defense Assessment</span>
+                            <div class="content">{esc(def_assessment)}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    if probable_punishment:
+                        st.markdown(f"""
+                        <div class="verdict-field">
+                            <span class="label">Probable Punishment</span>
+                            <div class="content">{esc(probable_punishment)}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+                if sections_applied_list:
+                    pills = "".join(f'<span class="sections-pill">{esc(s)}</span>' for s in sections_applied_list)
+                    st.markdown(f"""
+                    <div class="verdict-reasoning">
+                        <span class="label">Sections Applied</span>
+                        <div class="sections-pill-row">{pills}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                if reasoning:
+                    st.markdown(f"""
+                    <div class="verdict-reasoning">
+                        <span class="label">Reasoning</span>
+                        <div class="content">{esc(reasoning)}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+            else:
+                full_reasoning = st.session_state.case_state.get("verdict", "")
+                if full_reasoning and "Error" not in full_reasoning:
+                    st.markdown(f"""
+                    <div class="verdict-reasoning">
+                        <span class="label">Full Verdict & Reasoning</span>
+                        <div class="content">{esc(full_reasoning)}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                elif verdict_short:
+                    st.markdown(f"""
+                    <div class="verdict-reasoning">
+                        <span class="label">Verdict Summary</span>
+                        <div class="content">{esc(verdict_short)}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
         # ============================================
-        # ROW 3: PROSECUTOR R1 | DEFENSE R1
+        # PROSECUTION & DEFENSE ROUNDS (Collapsible)
         # ============================================
-        col_pros_r1, col_def_r1 = st.columns(2, gap="large")
-
-        with col_pros_r1:
-            st.markdown("""
-            <div class="debate-column">
-                <div class="col-header">
-                    <span class="icon">⚔️</span>
-                    <h3>Prosecution</h3>
-                    <span class="sub">Round 1 — Opening</span>
-                </div>
-            """, unsafe_allow_html=True)
-
+        with st.expander("Prosecution Round 1 - Opening", expanded=False):
             r1 = st.session_state.case_state.get("pros_r1")
             if r1:
                 st.markdown(f'<div class="argument-block prosecution">{esc(r1)}</div>', unsafe_allow_html=True)
             else:
-                st.markdown('<div class="empty-state">⏳ Awaiting opening argument...</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+                st.info("Awaiting prosecution opening argument...")
 
-        with col_def_r1:
-            st.markdown("""
-            <div class="debate-column">
-                <div class="col-header">
-                    <span class="icon">🛡️</span>
-                    <h3>Defense</h3>
-                    <span class="sub">Round 1 — Opening</span>
-                </div>
-            """, unsafe_allow_html=True)
-
+        with st.expander("Defense Round 1 - Opening", expanded=False):
             r1 = st.session_state.case_state.get("def_r1")
             if r1:
                 st.markdown(f'<div class="argument-block defense">{esc(r1)}</div>', unsafe_allow_html=True)
             else:
-                st.markdown('<div class="empty-state">⏳ Awaiting opening argument...</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+                st.info("Awaiting defense opening argument...")
 
-        # ============================================
-        # ROW 4: PROSECUTOR R2 | DEFENSE R2
-        # ============================================
-        col_pros_r2, col_def_r2 = st.columns(2, gap="large")
-
-        with col_pros_r2:
-            st.markdown("""
-            <div class="debate-column">
-                <div class="col-header">
-                    <span class="icon">⚔️</span>
-                    <h3>Prosecution</h3>
-                    <span class="sub">Round 2 — Closing</span>
-                </div>
-            """, unsafe_allow_html=True)
-
+        with st.expander("Prosecution Round 2 - Closing", expanded=False):
             r2 = st.session_state.case_state.get("pros_r2")
             if r2:
                 st.markdown(f'<div class="argument-block prosecution">{esc(r2)}</div>', unsafe_allow_html=True)
             else:
-                st.markdown('<div class="empty-state">⏳ Awaiting closing argument...</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+                st.info("Awaiting prosecution closing argument...")
 
-        with col_def_r2:
-            st.markdown("""
-            <div class="debate-column">
-                <div class="col-header">
-                    <span class="icon">🛡️</span>
-                    <h3>Defense</h3>
-                    <span class="sub">Round 2 — Closing</span>
-                </div>
-            """, unsafe_allow_html=True)
-
+        with st.expander("Defense Round 2 - Closing", expanded=False):
             r2 = st.session_state.case_state.get("def_r2")
             if r2:
                 st.markdown(f'<div class="argument-block defense">{esc(r2)}</div>', unsafe_allow_html=True)
             else:
-                st.markdown('<div class="empty-state">⏳ Awaiting closing argument...</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+                st.info("Awaiting defense closing argument...")
 
         # ============================================
-        # ROW 5: COURT REPORTER (Full Width)
+        # COURT REPORTER (Collapsible - Journalistic Style)
         # ============================================
         headline = st.session_state.case_state.get("headline")
         report = st.session_state.case_state.get("report")
 
         st.markdown('<div class="gold-divider"></div>', unsafe_allow_html=True)
 
-        if headline or report:
-            st.markdown("""
-            <div class="reporter-card">
-                <h4>📰 Court Reporter</h4>
-            """, unsafe_allow_html=True)
-            if headline:
-                st.markdown(f'<div class="headline">📌 {esc(headline)}</div>', unsafe_allow_html=True)
-            if report:
-                st.markdown(f'<div class="report">{esc(report)}</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-        else:
-            st.markdown("""
-            <div class="reporter-card">
-                <h4>📰 Court Reporter</h4>
-                <div class="empty">⏳ Preparing the case summary...</div>
-            </div>
-            """, unsafe_allow_html=True)
+        with st.expander("Court Reporter Summary", expanded=True):
+            if headline or report:
+                if headline:
+                    st.markdown(f'<div style="font-size: 18px; font-weight: 700; margin-bottom: 1rem; color: #8B6F47;">{esc(headline)}</div>', unsafe_allow_html=True)
+                if report:
+                    st.markdown(f'<div style="font-size: 15px; line-height: 1.8; color: #2c3e50; white-space: pre-wrap;">{esc(report)}</div>', unsafe_allow_html=True)
+            else:
+                st.info("Preparing the case summary...")
 
         # ---------- CONSULTANT SPARROW ----------
         show_consultant_panel = (
@@ -1498,3 +1528,50 @@ else:
     with tab_metrics:
         from evaluation.dashboard import show_evaluation_dashboard
         show_evaluation_dashboard()
+
+    # ============================================
+    # TAB 3: VISION
+    # ============================================
+    with tab_vision:
+        st.markdown("""
+        ## Our Vision
+
+        **Nyaya Mitra** — Intelligence for India's legal profession.
+
+        ### The Problem
+
+        India has over **1.5 million practicing advocates** — yet the tools built for legal research and case preparation rarely reach beyond the country's top firms and metro cities. The result: talented lawyers spend hours on manual research instead of strategy, and justice moves slower than it should.
+
+        ### Our Mission
+
+        **Nyaya Mitra exists to change that.**
+
+        We're building an AI companion for India's legal professionals — one that understands the reality of Indian practice:
+        - Bilingual courtrooms
+        - Fragmented case law databases
+        - Time-starved practitioners who need answers, not more homework
+
+        Nyaya Mitra doesn't replace legal judgment. It removes the friction around it — surfacing relevant precedent, structuring arguments, and working fluently across Hindi and English, so lawyers can focus on what only they can do: advocate.
+
+        ### Our Belief
+
+        **Every lawyer, regardless of location or firm size, deserves access to world-class research capability.**
+
+        - Better-prepared lawyers lead to a faster, fairer justice system
+        - Technology should serve the practice of law — not complicate it
+        - Intelligence should be distributed, not concentrated in metros
+
+        ### How We're Different
+
+        Unlike generic legal AI platforms, Nyaya Mitra is purpose-built for India:
+
+        ✓ **Understands Indian Law** — Access to Indian precedent, statutes, and case law  
+        ✓ **Bilingual Support** — Seamless Hindi-English reasoning and research  
+        ✓ **Designed for Practice** — Built with working lawyers, for working lawyers  
+        ✓ **Accessible** — Works for solo practitioners, small firms, and large teams  
+        ✓ **Fast & Reliable** — No frills, just results lawyers can trust  
+
+        ---
+
+        **Nyaya Mitra** — Building the intelligence layer for India's justice system, one case at a time.
+        """)

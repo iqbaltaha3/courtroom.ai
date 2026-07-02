@@ -88,36 +88,11 @@ Good examples:
 • Judge Finds Company Misled Citizens Using CM's Image
 • Landmark Ruling on Misrepresentation and Public Trust
 
-OUTPUT FORMAT
-
 HEADLINE:
-(A punchy news headline)
+(A punchy news headline - max 12 words)
 
-SUBHEAD:
-(One sentence explaining why the story matters)
-
-SUMMARY:
-(2-3 sentence overview)
-
-PROSECUTION'S CASE:
-(Brief summary)
-
-DEFENCE'S CASE:
-(Brief summary)
-
-COURT'S FINDINGS:
-(Key judicial findings)
-
-VERDICT:
-(Outcome of the case)
-
-WHY THIS MATTERS:
-(Explain significance for readers)
-
-PUBLIC IMPACT:
-(One concise paragraph)
-
-Keep the entire report under 300 words.
+STORY:
+(2-3 engaging paragraphs in pure journalistic narrative style covering: what happened, who was involved, what each side argued, what the judge found, and why it matters - keep it under 250 words, write as a flowing news article, NOT as bullet points or labeled sections)
 
 Think like a courtroom journalist covering tomorrow's front-page legal story.
 
@@ -139,4 +114,22 @@ def run_reporter(state: CourtState) -> dict:
         "Court delivers verdict"
     )
 
-    return {"report": response, "headline": headline}
+    # Extract story narrative (content after "STORY:")
+    story = ""
+    story_started = False
+    for line in response.splitlines():
+        if line.strip().upper().startswith("STORY:"):
+            story_started = True
+            # Get content after "STORY:" on same line if any
+            story_content = line.split(":", 1)[1].strip()
+            if story_content:
+                story = story_content + "\n"
+            continue
+        if story_started:
+            if line.strip().upper().startswith(("HEADLINE:", "---", "###")):
+                break
+            story += line + "\n"
+
+    report = story.strip() if story else response
+
+    return {"report": report, "headline": headline}
