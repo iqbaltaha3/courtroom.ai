@@ -7,6 +7,7 @@ import time
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from evaluation.evaluator import SystemEvaluator
+from auth import authenticate, submit_access_request
 
 # ============================================
 # PAGE CONFIG
@@ -24,191 +25,207 @@ st.markdown("""
 <style>
     /* -------------------- MAIN BACKGROUND -------------------- */
     .stApp {
-        background-color: #0a0a0f;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background-color: #f5f7fa;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     }
 
     /* -------------------- SCROLLBAR -------------------- */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #1a1a1a; }
-    ::-webkit-scrollbar-thumb { background: #c9a84c; border-radius: 4px; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #eaedf2; }
+    ::-webkit-scrollbar-thumb { background: #0066cc; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #0052a3; }
 
     /* -------------------- HEADER -------------------- */
     .court-header {
-        background: linear-gradient(135deg, #0a0a0f 0%, #1a1a1a 100%);
-        padding: 1.8rem 2.5rem;
-        border-radius: 0;
-        border-bottom: 3px solid #c9a84c;
+        background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+        padding: 2.5rem 2.5rem;
+        border-radius: 8px;
         margin-bottom: 2rem;
         text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 102, 204, 0.12);
     }
     .court-header h1 {
         font-size: 32px;
         font-weight: 700;
-        letter-spacing: 2px;
+        letter-spacing: 1px;
         color: #ffffff;
         margin: 0;
     }
     .court-header h1 span {
-        color: #c9a84c;
+        color: #ffffff;
+        font-weight: 700;
     }
     .court-header p {
-        color: #a0a0a0;
+        color: rgba(255, 255, 255, 0.9);
         font-size: 14px;
-        letter-spacing: 3px;
-        text-transform: uppercase;
-        margin: 6px 0 0 0;
-        font-weight: 300;
+        letter-spacing: 1px;
+        margin: 0.5rem 0 0 0;
+        font-weight: 400;
     }
 
     /* -------------------- TOP ROW: CASE MANAGER + LEGAL RESEARCH -------------------- */
     .top-card {
-        background: #0f0f14;
-        border: 1px solid #1e1e24;
-        padding: 1.2rem 1.5rem;
-        border-radius: 0;
+        background: #ffffff;
+        border: 1px solid #e1e8ed;
+        padding: 1.5rem;
+        border-radius: 8px;
         height: 100%;
-        border-top: 3px solid #c9a84c;
+        border-left: 4px solid #0066cc;
         min-height: 140px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        transition: box-shadow 0.2s ease;
+    }
+    .top-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 102, 204, 0.08);
     }
     .top-card h4 {
-        color: #c9a84c;
-        font-size: 13px;
+        color: #0066cc;
+        font-size: 12px;
         text-transform: uppercase;
-        letter-spacing: 2px;
-        margin: 0 0 0.8rem 0;
-        font-weight: 600;
+        letter-spacing: 1.5px;
+        margin: 0 0 1rem 0;
+        font-weight: 700;
     }
     .top-card .item {
-        color: #ffffff;
+        color: #2c3e50;
         font-size: 14px;
-        padding: 4px 0;
-        border-bottom: 1px solid #1a1a1a;
+        padding: 6px 0;
+        border-bottom: 1px solid #f0f3f7;
+    }
+    .top-card .item:last-child {
+        border-bottom: none;
     }
     .top-card .item strong {
-        color: #ffffff;
+        color: #2c3e50;
         font-weight: 600;
         margin-right: 6px;
     }
     .top-card .item .value {
-        color: #ffffff;
+        color: #34495e;
         white-space: pre-wrap;
         word-wrap: break-word;
         line-height: 1.6;
     }
     .top-card .empty {
-        color: #cccccc;
+        color: #95a5a6;
         font-size: 14px;
         font-style: italic;
     }
     .top-card.consultant-panel {
-        background: linear-gradient(180deg, #111116 0%, #0d0d12 100%);
-        border: 1px solid #3a2d0a;
-        border-top: 3px solid #d4af37;
-        box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.06);
+        background: #ffffff;
+        border-left: 4px solid #27ae60;
     }
     .top-card.consultant-panel h4 {
-        color: #f0cf6d;
+        color: #27ae60;
     }
     .top-card .sublabel {
-        color: #c9a84c;
+        color: #0066cc;
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 1.5px;
-        margin: 0.9rem 0 0.3rem 0;
-        font-weight: 600;
+        margin: 1rem 0 0.5rem 0;
+        font-weight: 700;
     }
     .top-card ul.bullet-list {
         margin: 0;
-        padding-left: 1.1rem;
-        color: #ffffff;
-        font-size: 13.5px;
+        padding-left: 1.2rem;
+        color: #2c3e50;
+        font-size: 14px;
         line-height: 1.7;
     }
     .top-card ul.bullet-list li {
-        margin-bottom: 2px;
+        margin-bottom: 4px;
     }
     .top-card ul.bullet-list.missing li {
-        color: #cbb98a;
+        color: #e74c3c;
     }
 
     /* -------------------- LEGAL RESEARCH CARD ITEMS -------------------- */
     .law-card {
-        background: #141418;
-        border-left: 3px solid #c9a84c;
-        padding: 0.6rem 0.9rem;
-        margin-bottom: 0.6rem;
-        font-size: 13.5px;
-        color: #ffffff;
+        background: #f8f9fb;
+        border-left: 4px solid #0066cc;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        font-size: 14px;
+        color: #2c3e50;
+        border-radius: 4px;
     }
     .law-card .title {
-        font-weight: 600;
-        color: #c9a84c;
-        margin-bottom: 2px;
-    }
-    .law-card .meta {
-        color: #999999;
-        font-size: 11.5px;
+        font-weight: 700;
+        color: #0052a3;
         margin-bottom: 4px;
     }
+    .law-card .meta {
+        color: #7f8c8d;
+        font-size: 12px;
+        margin-bottom: 6px;
+    }
     .law-card .relevance {
-        color: #dddddd;
+        color: #34495e;
         line-height: 1.6;
     }
 
     /* -------------------- JUDGE & VERDICT -------------------- */
     .judge-container {
-        background: #141418;
-        border: 1px solid #2a2a2a;
-        border-left: 6px solid #c9a84c;
-        padding: 1.2rem 2rem;
+        background: #ffffff;
+        border: 1px solid #e1e8ed;
+        border-left: 4px solid #0066cc;
+        padding: 1.5rem 2rem;
         margin-bottom: 1.5rem;
         text-align: center;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
     .judge-container .label {
-        color: #888888;
-        font-size: 12px;
+        color: #7f8c8d;
+        font-size: 11px;
         text-transform: uppercase;
-        letter-spacing: 2px;
+        letter-spacing: 1.5px;
+        font-weight: 700;
     }
     .judge-container .verdict-text {
-        font-size: 26px;
+        font-size: 28px;
         font-weight: 700;
         letter-spacing: 1px;
+        margin: 0.5rem 0;
     }
-    .judge-container .verdict-green { color: #4ade80; }
-    .judge-container .verdict-red { color: #f87171; }
-    .judge-container .verdict-amber { color: #fbbf24; }
+    .judge-container .verdict-green { color: #27ae60; }
+    .judge-container .verdict-red { color: #e74c3c; }
+    .judge-container .verdict-amber { color: #f39c12; }
     .judge-container .confidence {
-        background: #1e1e24;
-        padding: 4px 16px;
+        background: #f0f3f7;
+        padding: 6px 18px;
         border-radius: 20px;
-        color: #c9a84c;
+        color: #0066cc;
         font-size: 13px;
-        font-weight: 600;
-        border: 1px solid #2a2a2a;
+        font-weight: 700;
+        border: 1px solid #e1e8ed;
+        display: inline-block;
+        margin-top: 0.5rem;
     }
 
     /* Full Verdict Reasoning Box */
     .verdict-reasoning {
-        background: #141418;
-        border: 1px solid #2a2a2a;
-        border-left: 4px solid #c9a84c;
-        padding: 1.5rem 2rem;
+        background: #ffffff;
+        border: 1px solid #e1e8ed;
+        border-left: 4px solid #0066cc;
+        padding: 1.5rem;
         margin-bottom: 1.5rem;
-        border-radius: 0;
+        border-radius: 8px;
         text-align: left;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
     .verdict-reasoning .label {
-        color: #c9a84c;
+        color: #0066cc;
         font-size: 12px;
         text-transform: uppercase;
-        letter-spacing: 2px;
-        margin-bottom: 0.75rem;
+        letter-spacing: 1.5px;
+        margin-bottom: 1rem;
         display: block;
+        font-weight: 700;
     }
     .verdict-reasoning .content {
-        color: #ffffff;
+        color: #2c3e50;
         font-size: 15px;
         line-height: 1.8;
         white-space: pre-wrap;
@@ -221,90 +238,95 @@ st.markdown("""
         margin-bottom: 1.5rem;
     }
     .verdict-field {
-        background: #141418;
-        border: 1px solid #2a2a2a;
-        border-left: 4px solid #c9a84c;
-        padding: 1rem 1.3rem;
+        background: #ffffff;
+        border: 1px solid #e1e8ed;
+        border-left: 4px solid #0066cc;
+        padding: 1.2rem;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
     .verdict-field .label {
-        color: #c9a84c;
+        color: #0066cc;
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 1.5px;
-        margin-bottom: 0.4rem;
+        margin-bottom: 0.6rem;
         display: block;
+        font-weight: 700;
     }
     .verdict-field .content {
-        color: #ffffff;
+        color: #2c3e50;
         font-size: 14px;
         line-height: 1.7;
     }
     .sections-pill-row {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.5rem;
+        gap: 0.6rem;
     }
     .sections-pill {
-        background: #1e1e24;
-        border: 1px solid #c9a84c;
-        color: #c9a84c;
+        background: #f0f3f7;
+        border: 1px solid #0066cc;
+        color: #0066cc;
         font-size: 12px;
         font-weight: 600;
-        padding: 4px 12px;
+        padding: 6px 14px;
         border-radius: 20px;
     }
 
     /* -------------------- DEBATE COLUMNS -------------------- */
     .debate-column {
-        background: #0f0f14;
-        border: 1px solid #1e1e24;
-        padding: 1.5rem 1.8rem;
+        background: #ffffff;
+        border: 1px solid #e1e8ed;
+        padding: 1.5rem;
         height: 100%;
         min-height: 250px;
-        border-top: 4px solid #c9a84c;
+        border-left: 4px solid #0066cc;
         overflow-y: auto;
         max-height: 500px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
     .debate-column .col-header {
         display: flex;
         align-items: center;
         gap: 0.75rem;
-        border-bottom: 1px solid #1e1e24;
-        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #f0f3f7;
+        padding-bottom: 1rem;
         margin-bottom: 1rem;
         position: sticky;
         top: 0;
-        background: #0f0f14;
+        background: #ffffff;
         z-index: 2;
     }
-    .debate-column .col-header .icon { font-size: 22px; }
+    .debate-column .col-header .icon { font-size: 24px; }
     .debate-column .col-header h3 {
         margin: 0;
-        color: #ffffff;
+        color: #2c3e50;
         font-size: 18px;
-        font-weight: 600;
+        font-weight: 700;
         letter-spacing: 0.5px;
     }
     .debate-column .col-header .sub {
-        color: #888888;
+        color: #95a5a6;
         font-size: 12px;
-        font-weight: 300;
+        font-weight: 400;
         margin-left: auto;
     }
     .debate-column .empty-state {
-        color: #666666;
+        color: #bdc3c7;
         font-size: 14px;
         font-style: italic;
-        padding: 1.2rem 0;
+        padding: 1.5rem 0;
         text-align: center;
     }
     .argument-block {
-        background: #141418;
-        border-left: 4px solid #c9a84c;
-        padding: 1rem 1.2rem;
+        background: #f8f9fb;
+        border-left: 4px solid #0066cc;
+        padding: 1rem;
         margin-bottom: 1rem;
-        border-radius: 0;
-        color: #ffffff;
+        border-radius: 4px;
+        color: #2c3e50;
         font-size: 14px;
         line-height: 1.8;
         white-space: pre-wrap;
@@ -313,114 +335,111 @@ st.markdown("""
     .argument-block .round-tag {
         font-size: 11px;
         text-transform: uppercase;
-        color: #c9a84c;
-        font-weight: 600;
+        color: #0066cc;
+        font-weight: 700;
         letter-spacing: 1px;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
         display: block;
     }
-    .argument-block.prosecution { border-left-color: #fbbf24; }
-    .argument-block.defense { border-left-color: #94a3b8; }
+    .argument-block.prosecution { border-left-color: #e74c3c; }
+    .argument-block.defense { border-left-color: #27ae60; }
 
     /* -------------------- COURT REPORTER (BOTTOM) -------------------- */
     .reporter-card {
-        background: #0f0f14;
-        border: 1px solid #1e1e24;
-        padding: 1.2rem 2rem;
-        border-radius: 0;
-        border-top: 3px solid #c9a84c;
+        background: #ffffff;
+        border: 1px solid #e1e8ed;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border-left: 4px solid #0066cc;
         margin-top: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
     .reporter-card h4 {
-        color: #c9a84c;
-        font-size: 13px;
+        color: #0066cc;
+        font-size: 12px;
         text-transform: uppercase;
-        letter-spacing: 2px;
-        margin: 0 0 0.8rem 0;
-        font-weight: 600;
+        letter-spacing: 1.5px;
+        margin: 0 0 1rem 0;
+        font-weight: 700;
     }
     .reporter-card .headline {
-        color: #ffffff;
+        color: #2c3e50;
         font-size: 18px;
-        font-weight: 600;
-        margin-bottom: 0.75rem;
-        border-left: 3px solid #c9a84c;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        border-left: 3px solid #0066cc;
         padding-left: 1rem;
     }
     .reporter-card .report {
-        color: #ffffff;
+        color: #2c3e50;
         font-size: 15px;
         line-height: 1.8;
         white-space: pre-wrap;
         word-wrap: break-word;
     }
     .reporter-card .empty {
-        color: #cccccc;
+        color: #95a5a6;
         font-size: 14px;
         font-style: italic;
     }
 
     /* -------------------- INPUT & BUTTONS -------------------- */
     .stTextArea textarea {
-        background: #141418 !important;
-        color: #ffffff !important;
-        border: 1px solid #2a2a2a !important;
-        border-radius: 0 !important;
+        background: #ffffff !important;
+        color: #2c3e50 !important;
+        border: 1px solid #e1e8ed !important;
+        border-radius: 6px !important;
         font-size: 14px !important;
         line-height: 1.6 !important;
-        font-family: 'Inter', sans-serif !important;
     }
     .stTextArea textarea:focus {
-        border-color: #c9a84c !important;
-        box-shadow: none !important;
+        border-color: #0066cc !important;
+        box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1) !important;
     }
     .stButton button {
-        background: #c9a84c !important;
-        color: #0a0a0f !important;
+        background: #0066cc !important;
+        color: #ffffff !important;
         font-weight: 700 !important;
         border: none !important;
-        border-radius: 0 !important;
-        padding: 0.6rem 2.5rem !important;
-        letter-spacing: 1px;
-        text-transform: uppercase;
+        border-radius: 6px !important;
+        padding: 0.7rem 2rem !important;
+        letter-spacing: 0.5px;
         font-size: 14px !important;
         transition: all 0.2s ease !important;
-        box-shadow: 0 0 20px rgba(201, 168, 76, 0.15);
+        box-shadow: 0 2px 8px rgba(0, 102, 204, 0.2);
         width: 100%;
     }
     .stButton button:hover {
-        background: #d4af37 !important;
-        box-shadow: 0 0 30px rgba(201, 168, 76, 0.3) !important;
-        transform: translateY(-1px);
+        background: #0052a3 !important;
+        box-shadow: 0 4px 12px rgba(0, 102, 204, 0.35) !important;
     }
     .stButton button:disabled {
-        opacity: 0.4;
+        opacity: 0.5;
         pointer-events: none;
     }
 
     /* -------------------- DIVIDERS -------------------- */
     .gold-divider {
-        height: 2px;
-        background: linear-gradient(90deg, transparent, #c9a84c, transparent);
-        margin: 1rem 0 1.5rem 0;
-        opacity: 0.4;
+        height: 1px;
+        background: #e1e8ed;
+        margin: 1.5rem 0;
     }
 
     /* -------------------- STATUS -------------------- */
     .status-text {
-        color: #888888;
+        color: #7f8c8d;
         font-size: 13px;
         text-align: center;
         padding: 0.5rem 0;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
     }
-    .status-text .gold { color: #c9a84c; }
+    .status-text .gold { color: #0066cc; }
 
     /* -------------------- IDLE STATE -------------------- */
     .idle-state {
         text-align: center;
         padding: 4rem 1rem;
-        color: #555555;
+        color: #95a5a6;
     }
     .idle-state .icon {
         font-size: 64px;
@@ -428,34 +447,35 @@ st.markdown("""
         opacity: 0.6;
     }
     .idle-state h2 {
-        color: #c9a84c;
-        font-weight: 400;
-        letter-spacing: 2px;
+        color: #0066cc;
+        font-weight: 600;
+        letter-spacing: 1px;
         font-size: 26px;
     }
     .idle-state p {
-        color: #666666;
+        color: #7f8c8d;
         font-size: 15px;
     }
 
     /* -------------------- COMPLAINT DISPLAY -------------------- */
     .complaint-box {
-        background: #141418;
-        border-left: 4px solid #c9a84c;
-        padding: 1rem 1.5rem;
+        background: #f8f9fb;
+        border-left: 4px solid #0066cc;
+        padding: 1.2rem;
         margin-bottom: 1rem;
-        border-radius: 0;
+        border-radius: 4px;
     }
     .complaint-box .label {
-        color: #c9a84c;
-        font-size: 12px;
+        color: #0066cc;
+        font-size: 11px;
         text-transform: uppercase;
-        letter-spacing: 2px;
-        margin: 0 0 0.3rem 0;
+        letter-spacing: 1.5px;
+        margin: 0 0 0.5rem 0;
+        font-weight: 700;
     }
     .complaint-box .text {
-        color: #ffffff;
-        font-size: 15px;
+        color: #2c3e50;
+        font-size: 14px;
         line-height: 1.6;
         margin: 0;
         white-space: pre-wrap;
@@ -467,6 +487,8 @@ st.markdown("""
         .debate-column { min-height: auto; max-height: none; }
         .top-card { min-height: auto; }
         .verdict-grid { grid-template-columns: 1fr; }
+        .court-header { padding: 2rem 1.5rem; }
+        .court-header h1 { font-size: 24px; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -710,626 +732,797 @@ st.markdown("""
 
 
 # ============================================
-# TABS & NAVIGATION
+# AUTHENTICATION LAYER
 # ============================================
-tab_simulation, tab_metrics = st.tabs(["⚖️ Simulation", "📊 Metrics"])
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+if "username" not in st.session_state:
+    st.session_state.username = None
 
 
-# ============================================
-# TAB 1: SIMULATION
-# ============================================
-with tab_simulation:
-    # ============================================
-    # INPUT SECTION (hidden during simulation)
-    # ============================================
-    if not st.session_state.case_state.get("is_running"):
-        with st.container():
-            col_input1, col_input2 = st.columns([3, 1])
-            with col_input1:
-                # UPLOAD HANDLER FIRST (before text_area widget)
-                uploaded_file = st.file_uploader(
-                    "Or upload a complaint file (.txt, .pdf)",
-                    type=['txt', 'pdf'],
-                    key="complaint_uploader",
-                    disabled=False,
-                    label_visibility="visible"
-                )
-
-                if uploaded_file is not None:
-                    try:
-                        file_type = uploaded_file.type
-                        text = ""
-                        if file_type == "text/plain":
-                            text = uploaded_file.getvalue().decode("utf-8")
-                        elif file_type == "application/pdf":
-                            try:
-                                from pypdf import PdfReader
-                                reader = PdfReader(uploaded_file)
-                                for page in reader.pages:
-                                    page_text = page.extract_text()
-                                    if page_text:
-                                        text += page_text + "\n"
-                            except ImportError:
-                                st.error("The 'pypdf' library is required for PDF uploads. Please install it with: pip install pypdf")
-                                text = ""
-                        
-                        if text:
-                            # Store in a separate variable, NOT in complaint_input
-                            st.session_state.uploaded_complaint = text
-                            # Show confirmation - don't display the full text
-                            st.success(f"✅ File uploaded successfully ({len(text)} characters)")
-                    except Exception as e:
-                        st.error(f"Error reading file: {e}")
-
-                # NOW CREATE TEXT_AREA (after session_state is populated)
-                # User can edit manually entered text
-                complaint = st.text_area(
-                    "Complaint or case brief",
-                    height=120,
-                    placeholder="Enter the case brief / complaint details here... or upload a file above.",
-                    key="complaint_input",
-                    disabled=False,
-                    label_visibility="visible"
-                )
-
-            with col_input2:
-                st.write("")
-                st.write("")
-                if st.button("⚖️ Begin Simulation", type="primary", use_container_width=True):
-                    # Use uploaded content if available, otherwise use manual input
-                    current_complaint = st.session_state.get("uploaded_complaint") or st.session_state.get("complaint_input", "")
-                    if not current_complaint.strip():
-                        st.warning("Please enter a complaint or upload a file.")
-                        st.stop()
-
-                    st.session_state.case_state = dict(EMPTY_CASE_STATE)
-                    st.session_state.case_state["complaint"] = current_complaint
-                    st.session_state.case_state["is_running"] = True
-                    st.session_state.simulation_complete = False
-                    st.session_state.stream_iter = None
-                    st.rerun()
-
-    # ============================================
-    # STATUS INDICATOR
-    # ============================================
-    if st.session_state.case_state["is_running"]:
-        st.markdown('<div class="status-text"><span class="gold">⚖️</span> Court is in session... Arguments are being exchanged.</div>', unsafe_allow_html=True)
-        # DEBUG
-        with st.expander("🔧 Debug Info"):
-            st.write(f"is_running: {st.session_state.case_state.get('is_running')}")
-            st.write(f"simulation_complete: {st.session_state.simulation_complete}")
-            st.write(f"stream_iter exists: {st.session_state.stream_iter is not None}")
-    elif st.session_state.simulation_complete:
-        st.markdown('<div class="status-text"><span class="gold">✅</span> The Hon\'ble Judge has delivered the final verdict.</div>', unsafe_allow_html=True)
-    else:
-        st.markdown('<div class="status-text">🏛️ Enter a case brief and begin the simulation.</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="gold-divider"></div>', unsafe_allow_html=True)
-
-    # ============================================
-    # ROW 1: CASE MANAGER | LEGAL RESEARCH | CONSULTANT
-    # ============================================
-    col_cm, col_lr, col_cons = st.columns(3, gap="large")
-
-    with col_cm:
+if not st.session_state.authenticated:
+    # LOGIN PAGE STYLING
+    st.markdown("""
+    <style>
+        .login-section {
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid #e1e8ed;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        .login-section h3 {
+            color: #0066cc;
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #f0f3f7;
+            padding-bottom: 1rem;
+        }
+        .about-section {
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid #e1e8ed;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        .about-section h3 {
+            color: #0066cc;
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #f0f3f7;
+            padding-bottom: 1rem;
+        }
+        .about-section p, .about-section ul {
+            color: #2c3e50;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        .about-section ul {
+            margin-left: 1.2rem;
+        }
+        .about-section li {
+            margin-bottom: 0.6rem;
+        }
+        .about-section strong {
+            color: #0066cc;
+            font-weight: 700;
+        }
+        .stTextInput > div > div > input {
+            background: #f8f9fb !important;
+            border: 1px solid #e1e8ed !important;
+            color: #2c3e50 !important;
+            border-radius: 6px !important;
+            padding: 0.6rem 1rem !important;
+            font-size: 14px !important;
+        }
+        .stTextInput > div > div > input:focus {
+            border-color: #0066cc !important;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1) !important;
+        }
+        .stFormSubmitButton {
+            width: 100%;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # LANDING PAGE FOR UNAUTHENTICATED USERS
+    col_left, col_right = st.columns([1, 1], gap="large")
+    
+    with col_left:
+        st.markdown('<div class="about-section">', unsafe_allow_html=True)
+        st.markdown("### 🎯 About This Simulation")
         st.markdown("""
-        <div class="top-card">
-            <h4>📂 Case Manager</h4>
-        """, unsafe_allow_html=True)
+This is an **AI-powered courtroom simulation system** designed for legal education, 
+research, and analysis. It uses multiple AI agents working together to simulate a 
+realistic Indian legal case proceeding.
 
-        case_intake = st.session_state.case_state.get("case_intake")
+**How it works:**
+- 📋 **Case Manager** analyzes and categorizes complaints
+- ⚖️ **Legal Researcher** identifies applicable laws and precedents
+- 👨‍⚖️ **Prosecutor & Defense** present arguments and evidence
+- 🔨 **Judge** evaluates facts and delivers a verdict
+- 📰 **Court Reporter** documents the proceedings
+- 💡 **Legal Consultant** provides strategic analysis
 
-        if case_intake:
-            accused = case_intake.get("accused")
-            victim = case_intake.get("victim")
-            offences = case_intake.get("offences")
-            allegation = case_intake.get("allegation")
-            jurisdiction = case_intake.get("jurisdiction")
-            facts_list = case_intake.get("facts") or []
-            missing_list = case_intake.get("missing_information") or []
+**Use cases:**
+- Law school teaching and practice
+- Legal research and case analysis
+- Understanding Indian criminal law procedures
+- Exploring AI applications in judicial systems
 
-            if accused:
-                st.markdown(f'<div class="item"><strong>Accused:</strong> <span class="value">{esc(accused)}</span></div>', unsafe_allow_html=True)
-            if victim:
-                st.markdown(f'<div class="item"><strong>Victim:</strong> <span class="value">{esc(victim)}</span></div>', unsafe_allow_html=True)
-            if offences:
-                st.markdown(f'<div class="item"><strong>Offences:</strong> <span class="value">{esc(offences)}</span></div>', unsafe_allow_html=True)
-            if allegation:
-                st.markdown(f'<div class="item"><strong>Allegation:</strong> <span class="value">{esc(allegation)}</span></div>', unsafe_allow_html=True)
-            if jurisdiction:
-                st.markdown(f'<div class="item"><strong>Jurisdiction:</strong> <span class="value">{esc(jurisdiction)}</span></div>', unsafe_allow_html=True)
+The simulation processes real complaints and generates comprehensive legal analysis
+with reasoning grounded in Indian jurisprudence.
+        """)
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with col_right:
+        # LOGIN FORM
+        st.markdown('<div class="login-section">', unsafe_allow_html=True)
+        st.markdown("### 🔐 Login")
+        with st.form("login_form"):
+            username = st.text_input("Username", placeholder="Enter your username")
+            password = st.text_input("Password", type="password", placeholder="Enter your password")
+            submit_login = st.form_submit_button("🔓 Login", use_container_width=True)
+        
+        if submit_login:
+            if username and password:
+                if authenticate(username, password):
+                    st.session_state.authenticated = True
+                    st.session_state.username = username
+                    st.success("✅ Login successful! Redirecting...")
+                    time.sleep(1)
+                    st.rerun()
+                else:
+                    st.error("❌ Invalid credentials. Please try again.")
+            else:
+                st.warning("⚠️ Please enter both username and password.")
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        # REQUEST ACCESS FORM
+        st.markdown('<div class="login-section" style="margin-top: 1.5rem;">', unsafe_allow_html=True)
+        st.markdown("### 📨 Request Access")
+        st.markdown("Don't have an account? Request access below:")
+        
+        with st.form("access_request_form"):
+            email = st.text_input("Email address", placeholder="your.email@gmail.com")
+            message = st.text_area(
+                "How will you use this simulation?",
+                placeholder="Tell us about your use case (research, teaching, etc.)",
+                height=100
+            )
+            submit_request = st.form_submit_button("📤 Send Request", use_container_width=True)
+        
+        if submit_request:
+            if email and message:
+                if submit_access_request(email, message):
+                    st.success("✅ Access request submitted! We'll review it soon.")
+                    st.info("💌 Check your email for updates.")
+                else:
+                    st.error("❌ Error submitting request. Please try again.")
+            else:
+                st.warning("⚠️ Please fill in all fields.")
 
-            if facts_list:
-                st.markdown('<div class="sublabel">Material Facts</div>', unsafe_allow_html=True)
-                items = "".join(f"<li>{esc(f)}</li>" for f in facts_list)
-                st.markdown(f'<ul class="bullet-list">{items}</ul>', unsafe_allow_html=True)
+else:
+    # AUTHENTICATED USER - SHOW MAIN APP
+    
+    # Logout button in sidebar
+    with st.sidebar:
+        if st.button("🚪 Logout", use_container_width=True):
+            st.session_state.authenticated = False
+            st.session_state.username = None
+            st.session_state.clear()
+            st.success("✅ Logged out successfully!")
+            time.sleep(1)
+            st.rerun()
+        st.markdown(f"**Logged in as:** {st.session_state.username}")
+        st.markdown("---")
+    
 
-            if missing_list:
-                st.markdown('<div class="sublabel">Missing Information</div>', unsafe_allow_html=True)
-                items = "".join(f"<li>{esc(m)}</li>" for m in missing_list)
-                st.markdown(f'<ul class="bullet-list missing">{items}</ul>', unsafe_allow_html=True)
+    # ============================================
+    # TABS & NAVIGATION
+    # ============================================
+    tab_simulation, tab_metrics = st.tabs(["⚖️ Simulation", "📊 Metrics"])
 
+
+    # ============================================
+    # TAB 1: SIMULATION
+    # ============================================
+    with tab_simulation:
+        # ============================================
+        # INPUT SECTION (hidden during simulation)
+        # ============================================
+        if not st.session_state.case_state.get("is_running"):
+            with st.container():
+                col_input1, col_input2 = st.columns([3, 1])
+                with col_input1:
+                    # UPLOAD HANDLER FIRST (before text_area widget)
+                    uploaded_file = st.file_uploader(
+                        "Or upload a complaint file (.txt, .pdf)",
+                        type=['txt', 'pdf'],
+                        key="complaint_uploader",
+                        disabled=False,
+                        label_visibility="visible"
+                    )
+
+                    if uploaded_file is not None:
+                        try:
+                            file_type = uploaded_file.type
+                            text = ""
+                            if file_type == "text/plain":
+                                text = uploaded_file.getvalue().decode("utf-8")
+                            elif file_type == "application/pdf":
+                                try:
+                                    from pypdf import PdfReader
+                                    reader = PdfReader(uploaded_file)
+                                    for page in reader.pages:
+                                        page_text = page.extract_text()
+                                        if page_text:
+                                            text += page_text + "\n"
+                                except ImportError:
+                                    st.error("The 'pypdf' library is required for PDF uploads. Please install it with: pip install pypdf")
+                                    text = ""
+                        
+                            if text:
+                                # Store in a separate variable, NOT in complaint_input
+                                st.session_state.uploaded_complaint = text
+                                # Show confirmation - don't display the full text
+                                st.success(f"✅ File uploaded successfully ({len(text)} characters)")
+                        except Exception as e:
+                            st.error(f"Error reading file: {e}")
+
+                    # NOW CREATE TEXT_AREA (after session_state is populated)
+                    # User can edit manually entered text
+                    complaint = st.text_area(
+                        "Complaint or case brief",
+                        height=120,
+                        placeholder="Enter the case brief / complaint details here... or upload a file above.",
+                        key="complaint_input",
+                        disabled=False,
+                        label_visibility="visible"
+                    )
+
+                with col_input2:
+                    st.write("")
+                    st.write("")
+                    if st.button("⚖️ Begin Simulation", type="primary", use_container_width=True):
+                        # Use uploaded content if available, otherwise use manual input
+                        current_complaint = st.session_state.get("uploaded_complaint") or st.session_state.get("complaint_input", "")
+                        if not current_complaint.strip():
+                            st.warning("Please enter a complaint or upload a file.")
+                            st.stop()
+
+                        st.session_state.case_state = dict(EMPTY_CASE_STATE)
+                        st.session_state.case_state["complaint"] = current_complaint
+                        st.session_state.case_state["is_running"] = True
+                        st.session_state.simulation_complete = False
+                        st.session_state.stream_iter = None
+                        st.rerun()
+
+        # ============================================
+        # STATUS INDICATOR
+        # ============================================
+        if st.session_state.case_state["is_running"]:
+            st.markdown('<div class="status-text"><span class="gold">⚖️</span> Court is in session... Arguments are being exchanged.</div>', unsafe_allow_html=True)
+            # DEBUG
+            with st.expander("🔧 Debug Info"):
+                st.write(f"is_running: {st.session_state.case_state.get('is_running')}")
+                st.write(f"simulation_complete: {st.session_state.simulation_complete}")
+                st.write(f"stream_iter exists: {st.session_state.stream_iter is not None}")
+        elif st.session_state.simulation_complete:
+            st.markdown('<div class="status-text"><span class="gold">✅</span> The Hon\'ble Judge has delivered the final verdict.</div>', unsafe_allow_html=True)
         else:
-            accused = st.session_state.case_state.get("accused")
-            victim = st.session_state.case_state.get("victim")
-            offence = st.session_state.case_state.get("offence")
-            facts = st.session_state.case_state.get("facts")
+            st.markdown('<div class="status-text">🏛️ Enter a case brief and begin the simulation.</div>', unsafe_allow_html=True)
 
-            if accused or victim or offence:
+        st.markdown('<div class="gold-divider"></div>', unsafe_allow_html=True)
+
+        # ============================================
+        # ROW 1: CASE MANAGER | LEGAL RESEARCH | CONSULTANT
+        # ============================================
+        col_cm, col_lr, col_cons = st.columns(3, gap="large")
+
+        with col_cm:
+            st.markdown("""
+            <div class="top-card">
+                <h4>📂 Case Manager</h4>
+            """, unsafe_allow_html=True)
+
+            case_intake = st.session_state.case_state.get("case_intake")
+
+            if case_intake:
+                accused = case_intake.get("accused")
+                victim = case_intake.get("victim")
+                offences = case_intake.get("offences")
+                allegation = case_intake.get("allegation")
+                jurisdiction = case_intake.get("jurisdiction")
+                facts_list = case_intake.get("facts") or []
+                missing_list = case_intake.get("missing_information") or []
+
                 if accused:
                     st.markdown(f'<div class="item"><strong>Accused:</strong> <span class="value">{esc(accused)}</span></div>', unsafe_allow_html=True)
                 if victim:
                     st.markdown(f'<div class="item"><strong>Victim:</strong> <span class="value">{esc(victim)}</span></div>', unsafe_allow_html=True)
-                if offence:
-                    st.markdown(f'<div class="item"><strong>Offence:</strong> <span class="value">{esc(offence)}</span></div>', unsafe_allow_html=True)
-                if facts:
-                    st.markdown(f'<div class="item"><strong>Facts:</strong> <span class="value">{esc(facts)}</span></div>', unsafe_allow_html=True)
+                if offences:
+                    st.markdown(f'<div class="item"><strong>Offences:</strong> <span class="value">{esc(offences)}</span></div>', unsafe_allow_html=True)
+                if allegation:
+                    st.markdown(f'<div class="item"><strong>Allegation:</strong> <span class="value">{esc(allegation)}</span></div>', unsafe_allow_html=True)
+                if jurisdiction:
+                    st.markdown(f'<div class="item"><strong>Jurisdiction:</strong> <span class="value">{esc(jurisdiction)}</span></div>', unsafe_allow_html=True)
+
+                if facts_list:
+                    st.markdown('<div class="sublabel">Material Facts</div>', unsafe_allow_html=True)
+                    items = "".join(f"<li>{esc(f)}</li>" for f in facts_list)
+                    st.markdown(f'<ul class="bullet-list">{items}</ul>', unsafe_allow_html=True)
+
+                if missing_list:
+                    st.markdown('<div class="sublabel">Missing Information</div>', unsafe_allow_html=True)
+                    items = "".join(f"<li>{esc(m)}</li>" for m in missing_list)
+                    st.markdown(f'<ul class="bullet-list missing">{items}</ul>', unsafe_allow_html=True)
+
             else:
-                st.markdown('<div class="empty">Awaiting case analysis...</div>', unsafe_allow_html=True)
+                accused = st.session_state.case_state.get("accused")
+                victim = st.session_state.case_state.get("victim")
+                offence = st.session_state.case_state.get("offence")
+                facts = st.session_state.case_state.get("facts")
 
-        st.markdown('</div>', unsafe_allow_html=True)
+                if accused or victim or offence:
+                    if accused:
+                        st.markdown(f'<div class="item"><strong>Accused:</strong> <span class="value">{esc(accused)}</span></div>', unsafe_allow_html=True)
+                    if victim:
+                        st.markdown(f'<div class="item"><strong>Victim:</strong> <span class="value">{esc(victim)}</span></div>', unsafe_allow_html=True)
+                    if offence:
+                        st.markdown(f'<div class="item"><strong>Offence:</strong> <span class="value">{esc(offence)}</span></div>', unsafe_allow_html=True)
+                    if facts:
+                        st.markdown(f'<div class="item"><strong>Facts:</strong> <span class="value">{esc(facts)}</span></div>', unsafe_allow_html=True)
+                else:
+                    st.markdown('<div class="empty">Awaiting case analysis...</div>', unsafe_allow_html=True)
 
-    with col_lr:
-        st.markdown("""
-        <div class="top-card">
-            <h4>📚 Legal Research</h4>
-        """, unsafe_allow_html=True)
-
-        legal_research = st.session_state.case_state.get("legal_research")
-
-        if legal_research:
-            sections = legal_research.get("applicable_sections") or []
-            precedents = legal_research.get("precedents") or []
-            evidentiary_notes = legal_research.get("evidentiary_notes") or []
-            unsettled = legal_research.get("unsettled_questions") or []
-
-            if sections:
-                st.markdown('<div class="sublabel">Applicable Sections</div>', unsafe_allow_html=True)
-                for s in sections:
-                    st.markdown(f"""
-                    <div class="law-card">
-                        <div class="title">{esc(s.get('section'))} — {esc(s.get('act'))}</div>
-                        <div class="relevance">{esc(s.get('relevance'))}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-            if precedents:
-                st.markdown('<div class="sublabel">Precedents</div>', unsafe_allow_html=True)
-                for p in precedents:
-                    st.markdown(f"""
-                    <div class="law-card">
-                        <div class="title">{esc(p.get('case_name'))}</div>
-                        <div class="meta">{esc(p.get('court'))} · {esc(p.get('year'))}</div>
-                        <div class="relevance">{esc(p.get('relevance'))}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-            if evidentiary_notes:
-                st.markdown('<div class="sublabel">Evidentiary Notes</div>', unsafe_allow_html=True)
-                items = "".join(f"<li>{esc(n)}</li>" for n in evidentiary_notes)
-                st.markdown(f'<ul class="bullet-list">{items}</ul>', unsafe_allow_html=True)
-
-            if unsettled:
-                st.markdown('<div class="sublabel">Unsettled Questions</div>', unsafe_allow_html=True)
-                items = "".join(f"<li>{esc(q)}</li>" for q in unsettled)
-                st.markdown(f'<ul class="bullet-list">{items}</ul>', unsafe_allow_html=True)
-
-            if not (sections or precedents or evidentiary_notes or unsettled):
-                st.markdown('<div class="empty">No applicable law identified.</div>', unsafe_allow_html=True)
-
-        else:
-            laws = st.session_state.case_state.get("laws")
-            sections_txt = st.session_state.case_state.get("sections_applied")
-            precedents_txt = st.session_state.case_state.get("precedents")
-
-            if laws or sections_txt or precedents_txt:
-                if laws and laws != "Not specified":
-                    st.markdown(f'<div class="item"><strong>Laws:</strong> <span class="value">{esc(laws)}</span></div>', unsafe_allow_html=True)
-                if sections_txt and sections_txt != "Not specified":
-                    st.markdown(f'<div class="item"><strong>Sections:</strong> <span class="value">{esc(sections_txt)}</span></div>', unsafe_allow_html=True)
-                if precedents_txt and precedents_txt != "Not specified":
-                    st.markdown(f'<div class="item"><strong>Precedents:</strong> <span class="value">{esc(precedents_txt)}</span></div>', unsafe_allow_html=True)
-            else:
-                st.markdown('<div class="empty">Researching applicable laws...</div>', unsafe_allow_html=True)
-
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    with col_cons:
-        st.markdown("""
-        <div class="top-card">
-            <h4>🧭 Internal Consultant</h4>
-        """, unsafe_allow_html=True)
-
-        consultant = st.session_state.case_state.get("consultant")
-        if consultant:
-            st.markdown(f'<div class="item"><span class="value">{esc(consultant)}</span></div>', unsafe_allow_html=True)
-        else:
-            st.markdown('<div class="empty">Awaiting internal consultant review...</div>', unsafe_allow_html=True)
-
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    # ============================================
-    # ROW 2: JUDGE (Full Width)
-    # ============================================
-    judge_verdict = st.session_state.case_state.get("judge_verdict")
-    verdict_short = st.session_state.case_state.get("verdict_short")
-    confidence = st.session_state.case_state.get("confidence")
-
-    if not verdict_short:
-        st.markdown("""
-        <div class="judge-container">
-            <span class="label">👨‍⚖️ The Hon'ble Judge</span><br>
-            <span style="color: #666666; font-size: 18px;">Deliberating on the case...</span>
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        v_lower = str(verdict_short).lower()
-        if "not guilty" in v_lower:
-            verdict_color = "verdict-green"
-            status_text = "NOT GUILTY"
-        elif "partially" in v_lower:
-            verdict_color = "verdict-amber"
-            status_text = "PARTIALLY LIABLE"
-        elif "guilty" in v_lower:
-            verdict_color = "verdict-red"
-            status_text = "GUILTY"
-        else:
-            verdict_color = "verdict-amber"
-            status_text = esc(verdict_short).upper()
-
-        st.markdown(f"""
-        <div class="judge-container">
-            <span class="label">👨‍⚖️ The Hon'ble Judge</span><br>
-            <span class="verdict-text {verdict_color}">{status_text}</span><br>
-            <span style="color: #aaaaaa; font-size: 16px;">{esc(verdict_short)}</span><br>
-            <span class="confidence">Confidence {esc(confidence)}%</span>
-        </div>
-        """, unsafe_allow_html=True)
-
-    if judge_verdict:
-        findings = judge_verdict.get("findings")
-        pros_assessment = judge_verdict.get("prosecution_assessment")
-        def_assessment = judge_verdict.get("defense_assessment")
-        reasoning = judge_verdict.get("reasoning")
-        sections_applied_list = judge_verdict.get("sections_applied") or []
-        probable_punishment = judge_verdict.get("probable_punishment")
-
-        if findings or pros_assessment or def_assessment:
-            st.markdown('<div class="verdict-grid">', unsafe_allow_html=True)
-            if findings:
-                st.markdown(f"""
-                <div class="verdict-field">
-                    <span class="label">Findings</span>
-                    <div class="content">{esc(findings)}</div>
-                </div>
-                """, unsafe_allow_html=True)
-            if pros_assessment:
-                st.markdown(f"""
-                <div class="verdict-field">
-                    <span class="label">Prosecution Assessment</span>
-                    <div class="content">{esc(pros_assessment)}</div>
-                </div>
-                """, unsafe_allow_html=True)
-            if def_assessment:
-                st.markdown(f"""
-                <div class="verdict-field">
-                    <span class="label">Defense Assessment</span>
-                    <div class="content">{esc(def_assessment)}</div>
-                </div>
-                """, unsafe_allow_html=True)
-            if probable_punishment:
-                st.markdown(f"""
-                <div class="verdict-field">
-                    <span class="label">Probable Punishment</span>
-                    <div class="content">{esc(probable_punishment)}</div>
-                </div>
-                """, unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
 
-        if sections_applied_list:
-            pills = "".join(f'<span class="sections-pill">{esc(s)}</span>' for s in sections_applied_list)
+        with col_lr:
+            st.markdown("""
+            <div class="top-card">
+                <h4>📚 Legal Research</h4>
+            """, unsafe_allow_html=True)
+
+            legal_research = st.session_state.case_state.get("legal_research")
+
+            if legal_research:
+                sections = legal_research.get("applicable_sections") or []
+                precedents = legal_research.get("precedents") or []
+                evidentiary_notes = legal_research.get("evidentiary_notes") or []
+                unsettled = legal_research.get("unsettled_questions") or []
+
+                if sections:
+                    st.markdown('<div class="sublabel">Applicable Sections</div>', unsafe_allow_html=True)
+                    for s in sections:
+                        st.markdown(f"""
+                        <div class="law-card">
+                            <div class="title">{esc(s.get('section'))} — {esc(s.get('act'))}</div>
+                            <div class="relevance">{esc(s.get('relevance'))}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                if precedents:
+                    st.markdown('<div class="sublabel">Precedents</div>', unsafe_allow_html=True)
+                    for p in precedents:
+                        st.markdown(f"""
+                        <div class="law-card">
+                            <div class="title">{esc(p.get('case_name'))}</div>
+                            <div class="meta">{esc(p.get('court'))} · {esc(p.get('year'))}</div>
+                            <div class="relevance">{esc(p.get('relevance'))}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                if evidentiary_notes:
+                    st.markdown('<div class="sublabel">Evidentiary Notes</div>', unsafe_allow_html=True)
+                    items = "".join(f"<li>{esc(n)}</li>" for n in evidentiary_notes)
+                    st.markdown(f'<ul class="bullet-list">{items}</ul>', unsafe_allow_html=True)
+
+                if unsettled:
+                    st.markdown('<div class="sublabel">Unsettled Questions</div>', unsafe_allow_html=True)
+                    items = "".join(f"<li>{esc(q)}</li>" for q in unsettled)
+                    st.markdown(f'<ul class="bullet-list">{items}</ul>', unsafe_allow_html=True)
+
+                if not (sections or precedents or evidentiary_notes or unsettled):
+                    st.markdown('<div class="empty">No applicable law identified.</div>', unsafe_allow_html=True)
+
+            else:
+                laws = st.session_state.case_state.get("laws")
+                sections_txt = st.session_state.case_state.get("sections_applied")
+                precedents_txt = st.session_state.case_state.get("precedents")
+
+                if laws or sections_txt or precedents_txt:
+                    if laws and laws != "Not specified":
+                        st.markdown(f'<div class="item"><strong>Laws:</strong> <span class="value">{esc(laws)}</span></div>', unsafe_allow_html=True)
+                    if sections_txt and sections_txt != "Not specified":
+                        st.markdown(f'<div class="item"><strong>Sections:</strong> <span class="value">{esc(sections_txt)}</span></div>', unsafe_allow_html=True)
+                    if precedents_txt and precedents_txt != "Not specified":
+                        st.markdown(f'<div class="item"><strong>Precedents:</strong> <span class="value">{esc(precedents_txt)}</span></div>', unsafe_allow_html=True)
+                else:
+                    st.markdown('<div class="empty">Researching applicable laws...</div>', unsafe_allow_html=True)
+
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        with col_cons:
+            st.markdown("""
+            <div class="top-card">
+                <h4>🧭 Internal Consultant</h4>
+            """, unsafe_allow_html=True)
+
+            consultant = st.session_state.case_state.get("consultant")
+            if consultant:
+                st.markdown(f'<div class="item"><span class="value">{esc(consultant)}</span></div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="empty">Awaiting internal consultant review...</div>', unsafe_allow_html=True)
+
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        # ============================================
+        # ROW 2: JUDGE (Full Width)
+        # ============================================
+        judge_verdict = st.session_state.case_state.get("judge_verdict")
+        verdict_short = st.session_state.case_state.get("verdict_short")
+        confidence = st.session_state.case_state.get("confidence")
+
+        if not verdict_short:
+            st.markdown("""
+            <div class="judge-container">
+                <span class="label">👨‍⚖️ The Hon'ble Judge</span><br>
+                <span style="color: #666666; font-size: 18px;">Deliberating on the case...</span>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            v_lower = str(verdict_short).lower()
+            if "not guilty" in v_lower:
+                verdict_color = "verdict-green"
+                status_text = "NOT GUILTY"
+            elif "partially" in v_lower:
+                verdict_color = "verdict-amber"
+                status_text = "PARTIALLY LIABLE"
+            elif "guilty" in v_lower:
+                verdict_color = "verdict-red"
+                status_text = "GUILTY"
+            else:
+                verdict_color = "verdict-amber"
+                status_text = esc(verdict_short).upper()
+
             st.markdown(f"""
-            <div class="verdict-reasoning">
-                <span class="label">⚖️ Sections Applied</span>
-                <div class="sections-pill-row">{pills}</div>
+            <div class="judge-container">
+                <span class="label">👨‍⚖️ The Hon'ble Judge</span><br>
+                <span class="verdict-text {verdict_color}">{status_text}</span><br>
+                <span style="color: #aaaaaa; font-size: 16px;">{esc(verdict_short)}</span><br>
+                <span class="confidence">Confidence {esc(confidence)}%</span>
             </div>
             """, unsafe_allow_html=True)
 
-        if reasoning:
-            st.markdown(f"""
-            <div class="verdict-reasoning">
-                <span class="label">📜 Reasoning</span>
-                <div class="content">{esc(reasoning)}</div>
+        if judge_verdict:
+            findings = judge_verdict.get("findings")
+            pros_assessment = judge_verdict.get("prosecution_assessment")
+            def_assessment = judge_verdict.get("defense_assessment")
+            reasoning = judge_verdict.get("reasoning")
+            sections_applied_list = judge_verdict.get("sections_applied") or []
+            probable_punishment = judge_verdict.get("probable_punishment")
+
+            if findings or pros_assessment or def_assessment:
+                st.markdown('<div class="verdict-grid">', unsafe_allow_html=True)
+                if findings:
+                    st.markdown(f"""
+                    <div class="verdict-field">
+                        <span class="label">Findings</span>
+                        <div class="content">{esc(findings)}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                if pros_assessment:
+                    st.markdown(f"""
+                    <div class="verdict-field">
+                        <span class="label">Prosecution Assessment</span>
+                        <div class="content">{esc(pros_assessment)}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                if def_assessment:
+                    st.markdown(f"""
+                    <div class="verdict-field">
+                        <span class="label">Defense Assessment</span>
+                        <div class="content">{esc(def_assessment)}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                if probable_punishment:
+                    st.markdown(f"""
+                    <div class="verdict-field">
+                        <span class="label">Probable Punishment</span>
+                        <div class="content">{esc(probable_punishment)}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+
+            if sections_applied_list:
+                pills = "".join(f'<span class="sections-pill">{esc(s)}</span>' for s in sections_applied_list)
+                st.markdown(f"""
+                <div class="verdict-reasoning">
+                    <span class="label">⚖️ Sections Applied</span>
+                    <div class="sections-pill-row">{pills}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            if reasoning:
+                st.markdown(f"""
+                <div class="verdict-reasoning">
+                    <span class="label">📜 Reasoning</span>
+                    <div class="content">{esc(reasoning)}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        else:
+            full_reasoning = st.session_state.case_state.get("verdict", "")
+            if full_reasoning and "Error" not in full_reasoning:
+                st.markdown(f"""
+                <div class="verdict-reasoning">
+                    <span class="label">📜 Full Verdict &amp; Reasoning</span>
+                    <div class="content">{esc(full_reasoning)}</div>
+                </div>
+                """, unsafe_allow_html=True)
+            elif verdict_short:
+                st.markdown(f"""
+                <div class="verdict-reasoning">
+                    <span class="label">📜 Verdict Summary</span>
+                    <div class="content">{esc(verdict_short)}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        # ============================================
+        # ROW 3: PROSECUTOR R1 | DEFENSE R1
+        # ============================================
+        col_pros_r1, col_def_r1 = st.columns(2, gap="large")
+
+        with col_pros_r1:
+            st.markdown("""
+            <div class="debate-column">
+                <div class="col-header">
+                    <span class="icon">⚔️</span>
+                    <h3>Prosecution</h3>
+                    <span class="sub">Round 1 — Opening</span>
+                </div>
+            """, unsafe_allow_html=True)
+
+            r1 = st.session_state.case_state.get("pros_r1")
+            if r1:
+                st.markdown(f'<div class="argument-block prosecution">{esc(r1)}</div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="empty-state">⏳ Awaiting opening argument...</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        with col_def_r1:
+            st.markdown("""
+            <div class="debate-column">
+                <div class="col-header">
+                    <span class="icon">🛡️</span>
+                    <h3>Defense</h3>
+                    <span class="sub">Round 1 — Opening</span>
+                </div>
+            """, unsafe_allow_html=True)
+
+            r1 = st.session_state.case_state.get("def_r1")
+            if r1:
+                st.markdown(f'<div class="argument-block defense">{esc(r1)}</div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="empty-state">⏳ Awaiting opening argument...</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        # ============================================
+        # ROW 4: PROSECUTOR R2 | DEFENSE R2
+        # ============================================
+        col_pros_r2, col_def_r2 = st.columns(2, gap="large")
+
+        with col_pros_r2:
+            st.markdown("""
+            <div class="debate-column">
+                <div class="col-header">
+                    <span class="icon">⚔️</span>
+                    <h3>Prosecution</h3>
+                    <span class="sub">Round 2 — Closing</span>
+                </div>
+            """, unsafe_allow_html=True)
+
+            r2 = st.session_state.case_state.get("pros_r2")
+            if r2:
+                st.markdown(f'<div class="argument-block prosecution">{esc(r2)}</div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="empty-state">⏳ Awaiting closing argument...</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        with col_def_r2:
+            st.markdown("""
+            <div class="debate-column">
+                <div class="col-header">
+                    <span class="icon">🛡️</span>
+                    <h3>Defense</h3>
+                    <span class="sub">Round 2 — Closing</span>
+                </div>
+            """, unsafe_allow_html=True)
+
+            r2 = st.session_state.case_state.get("def_r2")
+            if r2:
+                st.markdown(f'<div class="argument-block defense">{esc(r2)}</div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="empty-state">⏳ Awaiting closing argument...</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        # ============================================
+        # ROW 5: COURT REPORTER (Full Width)
+        # ============================================
+        headline = st.session_state.case_state.get("headline")
+        report = st.session_state.case_state.get("report")
+
+        st.markdown('<div class="gold-divider"></div>', unsafe_allow_html=True)
+
+        if headline or report:
+            st.markdown("""
+            <div class="reporter-card">
+                <h4>📰 Court Reporter</h4>
+            """, unsafe_allow_html=True)
+            if headline:
+                st.markdown(f'<div class="headline">📌 {esc(headline)}</div>', unsafe_allow_html=True)
+            if report:
+                st.markdown(f'<div class="report">{esc(report)}</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div class="reporter-card">
+                <h4>📰 Court Reporter</h4>
+                <div class="empty">⏳ Preparing the case summary...</div>
             </div>
             """, unsafe_allow_html=True)
 
-    else:
-        full_reasoning = st.session_state.case_state.get("verdict", "")
-        if full_reasoning and "Error" not in full_reasoning:
-            st.markdown(f"""
-            <div class="verdict-reasoning">
-                <span class="label">📜 Full Verdict &amp; Reasoning</span>
-                <div class="content">{esc(full_reasoning)}</div>
-            </div>
+        # ---------- CONSULTANT SPARROW ----------
+        show_consultant_panel = (
+            st.session_state.case_state.get("top_consultant")
+            or st.session_state.simulation_complete
+            or st.session_state.case_state.get("report")
+            or st.session_state.case_state.get("judge_verdict")
+            or st.session_state.case_state.get("is_running")
+        )
+        if show_consultant_panel:
+            consultant_sparrow = st.session_state.case_state.get("top_consultant")
+            st.markdown("""
+            <div class="top-card consultant-panel" style="margin-top: 1rem;">
+                <h4>🏛️ Consultant Sparrow</h4>
             """, unsafe_allow_html=True)
-        elif verdict_short:
-            st.markdown(f"""
-            <div class="verdict-reasoning">
-                <span class="label">📜 Verdict Summary</span>
-                <div class="content">{esc(verdict_short)}</div>
-            </div>
-            """, unsafe_allow_html=True)
+            if consultant_sparrow and str(consultant_sparrow).strip():
+                st.markdown(f'<div class="item"><span class="value">{esc(consultant_sparrow)}</span></div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="empty">⏳ Consultant Sparrow is reviewing the full case...</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
-    # ============================================
-    # ROW 3: PROSECUTOR R1 | DEFENSE R1
-    # ============================================
-    col_pros_r1, col_def_r1 = st.columns(2, gap="large")
-
-    with col_pros_r1:
-        st.markdown("""
-        <div class="debate-column">
-            <div class="col-header">
-                <span class="icon">⚔️</span>
-                <h3>Prosecution</h3>
-                <span class="sub">Round 1 — Opening</span>
-            </div>
-        """, unsafe_allow_html=True)
-
-        r1 = st.session_state.case_state.get("pros_r1")
-        if r1:
-            st.markdown(f'<div class="argument-block prosecution">{esc(r1)}</div>', unsafe_allow_html=True)
-        else:
-            st.markdown('<div class="empty-state">⏳ Awaiting opening argument...</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    with col_def_r1:
-        st.markdown("""
-        <div class="debate-column">
-            <div class="col-header">
-                <span class="icon">🛡️</span>
-                <h3>Defense</h3>
-                <span class="sub">Round 1 — Opening</span>
-            </div>
-        """, unsafe_allow_html=True)
-
-        r1 = st.session_state.case_state.get("def_r1")
-        if r1:
-            st.markdown(f'<div class="argument-block defense">{esc(r1)}</div>', unsafe_allow_html=True)
-        else:
-            st.markdown('<div class="empty-state">⏳ Awaiting opening argument...</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    # ============================================
-    # ROW 4: PROSECUTOR R2 | DEFENSE R2
-    # ============================================
-    col_pros_r2, col_def_r2 = st.columns(2, gap="large")
-
-    with col_pros_r2:
-        st.markdown("""
-        <div class="debate-column">
-            <div class="col-header">
-                <span class="icon">⚔️</span>
-                <h3>Prosecution</h3>
-                <span class="sub">Round 2 — Closing</span>
-            </div>
-        """, unsafe_allow_html=True)
-
-        r2 = st.session_state.case_state.get("pros_r2")
-        if r2:
-            st.markdown(f'<div class="argument-block prosecution">{esc(r2)}</div>', unsafe_allow_html=True)
-        else:
-            st.markdown('<div class="empty-state">⏳ Awaiting closing argument...</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    with col_def_r2:
-        st.markdown("""
-        <div class="debate-column">
-            <div class="col-header">
-                <span class="icon">🛡️</span>
-                <h3>Defense</h3>
-                <span class="sub">Round 2 — Closing</span>
-            </div>
-        """, unsafe_allow_html=True)
-
-        r2 = st.session_state.case_state.get("def_r2")
-        if r2:
-            st.markdown(f'<div class="argument-block defense">{esc(r2)}</div>', unsafe_allow_html=True)
-        else:
-            st.markdown('<div class="empty-state">⏳ Awaiting closing argument...</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    # ============================================
-    # ROW 5: COURT REPORTER (Full Width)
-    # ============================================
-    headline = st.session_state.case_state.get("headline")
-    report = st.session_state.case_state.get("report")
-
-    st.markdown('<div class="gold-divider"></div>', unsafe_allow_html=True)
-
-    if headline or report:
-        st.markdown("""
-        <div class="reporter-card">
-            <h4>📰 Court Reporter</h4>
-        """, unsafe_allow_html=True)
-        if headline:
-            st.markdown(f'<div class="headline">📌 {esc(headline)}</div>', unsafe_allow_html=True)
-        if report:
-            st.markdown(f'<div class="report">{esc(report)}</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-    else:
-        st.markdown("""
-        <div class="reporter-card">
-            <h4>📰 Court Reporter</h4>
-            <div class="empty">⏳ Preparing the case summary...</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # ---------- CONSULTANT SPARROW ----------
-    show_consultant_panel = (
-        st.session_state.case_state.get("top_consultant")
-        or st.session_state.simulation_complete
-        or st.session_state.case_state.get("report")
-        or st.session_state.case_state.get("judge_verdict")
-        or st.session_state.case_state.get("is_running")
-    )
-    if show_consultant_panel:
-        consultant_sparrow = st.session_state.case_state.get("top_consultant")
-        st.markdown("""
-        <div class="top-card consultant-panel" style="margin-top: 1rem;">
-            <h4>🏛️ Consultant Sparrow</h4>
-        """, unsafe_allow_html=True)
-        if consultant_sparrow and str(consultant_sparrow).strip():
-            st.markdown(f'<div class="item"><span class="value">{esc(consultant_sparrow)}</span></div>', unsafe_allow_html=True)
-        else:
-            st.markdown('<div class="empty">⏳ Consultant Sparrow is reviewing the full case...</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    # ============================================
-    # STREAMING ENGINE (INCREMENTAL UPDATES)
-    # ============================================
-    if st.session_state.case_state.get("is_running") and not st.session_state.simulation_complete:
-        progress_placeholder = st.empty()
-        progress_placeholder.info("🔄 Streaming simulation events...")
+        # ============================================
+        # STREAMING ENGINE (INCREMENTAL UPDATES)
+        # ============================================
+        if st.session_state.case_state.get("is_running") and not st.session_state.simulation_complete:
+            progress_placeholder = st.empty()
+            progress_placeholder.info("🔄 Streaming simulation events...")
         
-        if st.session_state.stream_iter is None:
-            initial_state = dict(EMPTY_CASE_STATE)
-            initial_state["complaint"] = st.session_state.case_state["complaint"]
-            initial_state.pop("is_running", None)
+            if st.session_state.stream_iter is None:
+                initial_state = dict(EMPTY_CASE_STATE)
+                initial_state["complaint"] = st.session_state.case_state["complaint"]
+                initial_state.pop("is_running", None)
+
+                try:
+                    progress_placeholder.info("📊 Initializing graph stream...")
+                    print("[STREAM] Initializing graph.stream()")
+                    st.session_state.stream_iter = court_graph.stream(
+                        initial_state,
+                        stream_mode="updates"
+                    )
+                    print("[STREAM] ✅ Stream initialized")
+                except Exception as e:
+                    progress_placeholder.error(f"❌ Error initializing stream: {e}")
+                    import traceback
+                    st.error(traceback.format_exc())
+                    st.session_state.case_state["is_running"] = False
+                    st.session_state.stream_iter = None
+                    st.rerun()
 
             try:
-                progress_placeholder.info("📊 Initializing graph stream...")
-                print("[STREAM] Initializing graph.stream()")
-                st.session_state.stream_iter = court_graph.stream(
-                    initial_state,
-                    stream_mode="updates"
-                )
-                print("[STREAM] ✅ Stream initialized")
+                node_start_time = time.time()
+                print("[STREAM] Calling next() on stream_iter...")
+                event = next(st.session_state.stream_iter)
+                print(f"[STREAM] Got event: {event}")
+            
+                # Log which node(s) are being processed
+                node_names = list(event.keys())
+                print(f"🔄 Processing node(s): {node_names}")
+                progress_placeholder.info(f"🔄 Running: {', '.join(node_names)}")
+            
+                for node_name, partial in event.items():
+                    node_elapsed = time.time() - node_start_time
+                    st.session_state.node_times[node_name] = node_elapsed
+                    print(f"  ✅ {node_name}: {node_elapsed:.2f}s - keys: {list(partial.keys())}")
+            
+                    # Safely update state
+                    try:
+                        for key, value in partial.items():
+                            if value is not None:
+                                st.session_state.case_state[key] = value
+                    except Exception as e:
+                        print(f"  ⚠️  Error updating state for {node_name}: {e}")
+                        raise
+            
+                print("[STREAM] About to rerun after processing event")
+                st.rerun()
+            
+            except StopIteration:
+                print("✅ Stream completed successfully (StopIteration)")
+                progress_placeholder.success("✅ Simulation completed!")
+                st.session_state.simulation_complete = True
+                st.session_state.case_state["is_running"] = False
+                st.session_state.stream_iter = None
+                st.rerun()
+            
+            except TimeoutError as e:
+                print(f"⏱️  TIMEOUT: {e}")
+                progress_placeholder.error(f"⏱️ Timeout: Node took too long")
+                st.error(f"Node processing timed out: {e}")
+                st.session_state.case_state["is_running"] = False
+                st.session_state.stream_iter = None
+                st.rerun()
+            
             except Exception as e:
-                progress_placeholder.error(f"❌ Error initializing stream: {e}")
+                print(f"❌ STREAMING ERROR: {e}")
                 import traceback
-                st.error(traceback.format_exc())
+                error_msg = traceback.format_exc()
+                print(error_msg)
+                progress_placeholder.error(f"❌ Error: {str(e)[:100]}")
+                st.error(f"Error: {e}")
+                with st.expander("📋 Full Error Details"):
+                    st.code(error_msg)
                 st.session_state.case_state["is_running"] = False
                 st.session_state.stream_iter = None
                 st.rerun()
 
-        try:
-            node_start_time = time.time()
-            print("[STREAM] Calling next() on stream_iter...")
-            event = next(st.session_state.stream_iter)
-            print(f"[STREAM] Got event: {event}")
-            
-            # Log which node(s) are being processed
-            node_names = list(event.keys())
-            print(f"🔄 Processing node(s): {node_names}")
-            progress_placeholder.info(f"🔄 Running: {', '.join(node_names)}")
-            
-            for node_name, partial in event.items():
-                node_elapsed = time.time() - node_start_time
-                st.session_state.node_times[node_name] = node_elapsed
-                print(f"  ✅ {node_name}: {node_elapsed:.2f}s - keys: {list(partial.keys())}")
-            
-                # Safely update state
-                try:
-                    for key, value in partial.items():
-                        if value is not None:
-                            st.session_state.case_state[key] = value
-                except Exception as e:
-                    print(f"  ⚠️  Error updating state for {node_name}: {e}")
-                    raise
-            
-            print("[STREAM] About to rerun after processing event")
-            st.rerun()
-            
-        except StopIteration:
-            print("✅ Stream completed successfully (StopIteration)")
-            progress_placeholder.success("✅ Simulation completed!")
-            st.session_state.simulation_complete = True
-            st.session_state.case_state["is_running"] = False
-            st.session_state.stream_iter = None
-            st.rerun()
-            
-        except TimeoutError as e:
-            print(f"⏱️  TIMEOUT: {e}")
-            progress_placeholder.error(f"⏱️ Timeout: Node took too long")
-            st.error(f"Node processing timed out: {e}")
-            st.session_state.case_state["is_running"] = False
-            st.session_state.stream_iter = None
-            st.rerun()
-            
-        except Exception as e:
-            print(f"❌ STREAMING ERROR: {e}")
-            import traceback
-            error_msg = traceback.format_exc()
-            print(error_msg)
-            progress_placeholder.error(f"❌ Error: {str(e)[:100]}")
-            st.error(f"Error: {e}")
-            with st.expander("📋 Full Error Details"):
-                st.code(error_msg)
-            st.session_state.case_state["is_running"] = False
-            st.session_state.stream_iter = None
-            st.rerun()
+        # ============================================
+        # IDLE / RESET & DOWNLOAD REPORT
+        # ============================================
+        if not st.session_state.case_state.get("is_running") and not st.session_state.simulation_complete:
+            if not st.session_state.case_state.get("complaint"):
+                st.markdown("""
+                <div class="idle-state">
+                    <div class="icon">🏛️</div>
+                    <h2>The Court Awaits</h2>
+                    <p>Enter a case brief above to begin the adversarial simulation.</p>
+                </div>
+                """, unsafe_allow_html=True)
 
-    # ============================================
-    # IDLE / RESET & DOWNLOAD REPORT
-    # ============================================
-    if not st.session_state.case_state.get("is_running") and not st.session_state.simulation_complete:
-        if not st.session_state.case_state.get("complaint"):
-            st.markdown("""
-            <div class="idle-state">
-                <div class="icon">🏛️</div>
-                <h2>The Court Awaits</h2>
-                <p>Enter a case brief above to begin the adversarial simulation.</p>
-            </div>
-            """, unsafe_allow_html=True)
+        if st.session_state.simulation_complete:
+            st.markdown('<div class="gold-divider"></div>', unsafe_allow_html=True)
 
-    if st.session_state.simulation_complete:
-        st.markdown('<div class="gold-divider"></div>', unsafe_allow_html=True)
-
-        if "metrics_recorded" not in st.session_state:
-            st.session_state.metrics_recorded = False
-    
-        if not st.session_state.metrics_recorded:
-            metrics = st.session_state.evaluator.evaluate_case(
-                st.session_state.case_state,
-                st.session_state.node_times
-            )
-            st.session_state.metrics_recorded = True
-            st.success(f"✅ Case evaluated. Quality Score: {metrics.overall_quality_score:.1f}/100")
-    
-        s = st.session_state.case_state
-        report_content = _build_report_content(s)
-
-        col_btn1, col_btn2, col_btn3 = st.columns(3)
-        with col_btn1:
-            st.download_button(
-                label="📄 Download PDF",
-                data=_build_pdf_bytes(report_content),
-                file_name="courtroom_report.pdf",
-                mime="application/pdf",
-                use_container_width=True,
-            )
-        with col_btn2:
-            st.download_button(
-                label="📥 Download Markdown",
-                data=report_content,
-                file_name="courtroom_report.md",
-                mime="text/markdown",
-                use_container_width=True,
-            )
-        with col_btn3:
-            if st.button("🔄 Start New Case", use_container_width=True):
-                st.session_state.case_state = dict(EMPTY_CASE_STATE)
-                st.session_state.simulation_complete = False
-                st.session_state.stream_iter = None
-                st.session_state.node_times = {}
+            if "metrics_recorded" not in st.session_state:
                 st.session_state.metrics_recorded = False
-                st.session_state.complaint_input = ""
-                st.session_state.uploaded_complaint = ""
-                st.rerun()
+    
+            if not st.session_state.metrics_recorded:
+                metrics = st.session_state.evaluator.evaluate_case(
+                    st.session_state.case_state,
+                    st.session_state.node_times
+                )
+                st.session_state.metrics_recorded = True
+                st.success(f"✅ Case evaluated. Quality Score: {metrics.overall_quality_score:.1f}/100")
+    
+            s = st.session_state.case_state
+            report_content = _build_report_content(s)
 
-# ============================================
-# TAB 2: METRICS
-# ============================================
-with tab_metrics:
-    from evaluation.dashboard import show_evaluation_dashboard
-    show_evaluation_dashboard()
+            col_btn1, col_btn2, col_btn3 = st.columns(3)
+            with col_btn1:
+                st.download_button(
+                    label="📄 Download PDF",
+                    data=_build_pdf_bytes(report_content),
+                    file_name="courtroom_report.pdf",
+                    mime="application/pdf",
+                    use_container_width=True,
+                )
+            with col_btn2:
+                st.download_button(
+                    label="📥 Download Markdown",
+                    data=report_content,
+                    file_name="courtroom_report.md",
+                    mime="text/markdown",
+                    use_container_width=True,
+                )
+            with col_btn3:
+                if st.button("🔄 Start New Case", use_container_width=True):
+                    st.session_state.case_state = dict(EMPTY_CASE_STATE)
+                    st.session_state.simulation_complete = False
+                    st.session_state.stream_iter = None
+                    st.session_state.node_times = {}
+                    st.session_state.metrics_recorded = False
+                    st.session_state.complaint_input = ""
+                    st.session_state.uploaded_complaint = ""
+                    st.rerun()
+
+    # ============================================
+    # TAB 2: METRICS
+    # ============================================
+    with tab_metrics:
+        from evaluation.dashboard import show_evaluation_dashboard
+        show_evaluation_dashboard()
