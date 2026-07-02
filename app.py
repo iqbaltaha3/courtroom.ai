@@ -14,7 +14,7 @@ from auth import authenticate, submit_access_request
 # ============================================
 st.set_page_config(
     page_title="Courtroom AI - Legal Simulation",
-    page_icon="⚖️",
+    page_icon="⚖",
     layout="wide"
 )
 
@@ -32,17 +32,17 @@ st.markdown("""
     /* -------------------- SCROLLBAR -------------------- */
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: #eaedf2; }
-    ::-webkit-scrollbar-thumb { background: #0066cc; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #0052a3; }
+    ::-webkit-scrollbar-thumb { background: #8B6F47; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #6B5344; }
 
     /* -------------------- HEADER -------------------- */
     .court-header {
-        background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+        background: linear-gradient(135deg, #8B6F47 0%, #6B5344 100%);
         padding: 2.5rem 2.5rem;
         border-radius: 8px;
         margin-bottom: 2rem;
         text-align: center;
-        box-shadow: 0 2px 8px rgba(0, 102, 204, 0.12);
+        box-shadow: 0 4px 16px rgba(107, 83, 68, 0.25);
     }
     .court-header h1 {
         font-size: 32px;
@@ -66,20 +66,20 @@ st.markdown("""
     /* -------------------- TOP ROW: CASE MANAGER + LEGAL RESEARCH -------------------- */
     .top-card {
         background: #ffffff;
-        border: 1px solid #e1e8ed;
+        border: 2px solid #C4B5A0;
         padding: 1.5rem;
         border-radius: 8px;
         height: 100%;
-        border-left: 4px solid #0066cc;
+        border-left: 6px solid #8B6F47;
         min-height: 140px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 12px rgba(107, 83, 68, 0.15);
         transition: box-shadow 0.2s ease;
     }
     .top-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 102, 204, 0.08);
+        box-shadow: 0 6px 20px rgba(107, 83, 68, 0.2);
     }
     .top-card h4 {
-        color: #0066cc;
+        color: #8B6F47;
         font-size: 12px;
         text-transform: uppercase;
         letter-spacing: 1.5px;
@@ -119,7 +119,7 @@ st.markdown("""
         color: #27ae60;
     }
     .top-card .sublabel {
-        color: #0066cc;
+        color: #8B6F47;
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 1.5px;
@@ -143,7 +143,7 @@ st.markdown("""
     /* -------------------- LEGAL RESEARCH CARD ITEMS -------------------- */
     .law-card {
         background: #f8f9fb;
-        border-left: 4px solid #0066cc;
+        border-left: 6px solid #8B6F47;
         padding: 1rem;
         margin-bottom: 1rem;
         font-size: 14px;
@@ -152,7 +152,7 @@ st.markdown("""
     }
     .law-card .title {
         font-weight: 700;
-        color: #0052a3;
+        color: #6B5344;
         margin-bottom: 4px;
     }
     .law-card .meta {
@@ -168,13 +168,13 @@ st.markdown("""
     /* -------------------- JUDGE & VERDICT -------------------- */
     .judge-container {
         background: #ffffff;
-        border: 1px solid #e1e8ed;
-        border-left: 4px solid #0066cc;
+        border: 2px solid #C4B5A0;
+        border-left: 6px solid #8B6F47;
         padding: 1.5rem 2rem;
         margin-bottom: 1.5rem;
         text-align: center;
         border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 12px rgba(107, 83, 68, 0.15);
     }
     .judge-container .label {
         color: #7f8c8d;
@@ -196,10 +196,10 @@ st.markdown("""
         background: #f0f3f7;
         padding: 6px 18px;
         border-radius: 20px;
-        color: #0066cc;
+        color: #8B6F47;
         font-size: 13px;
         font-weight: 700;
-        border: 1px solid #e1e8ed;
+        border: 2px solid #C4B5A0;
         display: inline-block;
         margin-top: 0.5rem;
     }
@@ -207,16 +207,16 @@ st.markdown("""
     /* Full Verdict Reasoning Box */
     .verdict-reasoning {
         background: #ffffff;
-        border: 1px solid #e1e8ed;
-        border-left: 4px solid #0066cc;
+        border: 2px solid #C4B5A0;
+        border-left: 6px solid #8B6F47;
         padding: 1.5rem;
         margin-bottom: 1.5rem;
         border-radius: 8px;
         text-align: left;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 12px rgba(107, 83, 68, 0.15);
     }
     .verdict-reasoning .label {
-        color: #0066cc;
+        color: #8B6F47;
         font-size: 12px;
         text-transform: uppercase;
         letter-spacing: 1.5px;
@@ -239,14 +239,14 @@ st.markdown("""
     }
     .verdict-field {
         background: #ffffff;
-        border: 1px solid #e1e8ed;
-        border-left: 4px solid #0066cc;
+        border: 2px solid #C4B5A0;
+        border-left: 6px solid #8B6F47;
         padding: 1.2rem;
         border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 12px rgba(107, 83, 68, 0.15);
     }
     .verdict-field .label {
-        color: #0066cc;
+        color: #8B6F47;
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 1.5px;
@@ -266,8 +266,8 @@ st.markdown("""
     }
     .sections-pill {
         background: #f0f3f7;
-        border: 1px solid #0066cc;
-        color: #0066cc;
+        border: 2px solid #8B6F47;
+        color: #8B6F47;
         font-size: 12px;
         font-weight: 600;
         padding: 6px 14px;
@@ -277,15 +277,15 @@ st.markdown("""
     /* -------------------- DEBATE COLUMNS -------------------- */
     .debate-column {
         background: #ffffff;
-        border: 1px solid #e1e8ed;
+        border: 2px solid #C4B5A0;
         padding: 1.5rem;
         height: 100%;
         min-height: 250px;
-        border-left: 4px solid #0066cc;
+        border-left: 6px solid #8B6F47;
         overflow-y: auto;
         max-height: 500px;
         border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 12px rgba(107, 83, 68, 0.15);
     }
     .debate-column .col-header {
         display: flex;
@@ -322,7 +322,7 @@ st.markdown("""
     }
     .argument-block {
         background: #f8f9fb;
-        border-left: 4px solid #0066cc;
+        border-left: 6px solid #8B6F47;
         padding: 1rem;
         margin-bottom: 1rem;
         border-radius: 4px;
@@ -335,7 +335,7 @@ st.markdown("""
     .argument-block .round-tag {
         font-size: 11px;
         text-transform: uppercase;
-        color: #0066cc;
+        color: #8B6F47;
         font-weight: 700;
         letter-spacing: 1px;
         margin-bottom: 6px;
@@ -347,15 +347,15 @@ st.markdown("""
     /* -------------------- COURT REPORTER (BOTTOM) -------------------- */
     .reporter-card {
         background: #ffffff;
-        border: 1px solid #e1e8ed;
+        border: 2px solid #C4B5A0;
         padding: 1.5rem;
         border-radius: 8px;
-        border-left: 4px solid #0066cc;
+        border-left: 6px solid #8B6F47;
         margin-top: 1.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 12px rgba(107, 83, 68, 0.15);
     }
     .reporter-card h4 {
-        color: #0066cc;
+        color: #8B6F47;
         font-size: 12px;
         text-transform: uppercase;
         letter-spacing: 1.5px;
@@ -367,7 +367,7 @@ st.markdown("""
         font-size: 18px;
         font-weight: 700;
         margin-bottom: 1rem;
-        border-left: 3px solid #0066cc;
+        border-left: 6px solid #8B6F47;
         padding-left: 1rem;
     }
     .reporter-card .report {
@@ -397,7 +397,7 @@ st.markdown("""
         box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1) !important;
     }
     .stButton button {
-        background: #0066cc !important;
+        background: #8B6F47 !important;
         color: #ffffff !important;
         font-weight: 700 !important;
         border: none !important;
@@ -406,12 +406,12 @@ st.markdown("""
         letter-spacing: 0.5px;
         font-size: 14px !important;
         transition: all 0.2s ease !important;
-        box-shadow: 0 2px 8px rgba(0, 102, 204, 0.2);
+        box-shadow: 0 4px 12px rgba(107, 83, 68, 0.25);
         width: 100%;
     }
     .stButton button:hover {
-        background: #0052a3 !important;
-        box-shadow: 0 4px 12px rgba(0, 102, 204, 0.35) !important;
+        background: #6B5344 !important;
+        box-shadow: 0 6px 20px rgba(107, 83, 68, 0.35) !important;
     }
     .stButton button:disabled {
         opacity: 0.5;
@@ -433,7 +433,7 @@ st.markdown("""
         padding: 0.5rem 0;
         letter-spacing: 0.5px;
     }
-    .status-text .gold { color: #0066cc; }
+    .status-text .gold { color: #8B6F47; }
 
     /* -------------------- IDLE STATE -------------------- */
     .idle-state {
@@ -447,7 +447,7 @@ st.markdown("""
         opacity: 0.6;
     }
     .idle-state h2 {
-        color: #0066cc;
+        color: #8B6F47;
         font-weight: 600;
         letter-spacing: 1px;
         font-size: 26px;
@@ -460,13 +460,13 @@ st.markdown("""
     /* -------------------- COMPLAINT DISPLAY -------------------- */
     .complaint-box {
         background: #f8f9fb;
-        border-left: 4px solid #0066cc;
+        border-left: 6px solid #8B6F47;
         padding: 1.2rem;
         margin-bottom: 1rem;
         border-radius: 4px;
     }
     .complaint-box .label {
-        color: #0066cc;
+        color: #8B6F47;
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 1.5px;
@@ -725,8 +725,8 @@ if "uploaded_complaint" not in st.session_state:
 # ============================================
 st.markdown("""
 <div class="court-header">
-    <h1>⚖️ <span>COURTROOM</span> AI</h1>
-    <p>Indian Law · Multi-Agent Adversarial Simulation</p>
+    <h1>COURTROOM AI</h1>
+    <p>Legal Simulation Platform · Indian Law</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -744,158 +744,130 @@ if not st.session_state.authenticated:
     # LOGIN PAGE STYLING
     st.markdown("""
     <style>
+        .login-container {
+            max-width: 450px;
+            margin: 3rem auto;
+            padding: 0;
+        }
         .login-section {
             background: #ffffff;
-            padding: 2rem;
+            padding: 2.5rem;
             border-radius: 8px;
-            border: 1px solid #e1e8ed;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 2px solid #C4B5A0;
+            box-shadow: 0 4px 16px rgba(107, 83, 68, 0.15);
+            margin-bottom: 1.5rem;
         }
         .login-section h3 {
-            color: #0066cc;
+            color: #8B6F47;
             font-size: 20px;
             font-weight: 700;
             margin-top: 0;
             margin-bottom: 1.5rem;
-            border-bottom: 2px solid #f0f3f7;
+            border-bottom: 2px solid #C4B5A0;
             padding-bottom: 1rem;
-        }
-        .about-section {
-            background: #ffffff;
-            padding: 2rem;
-            border-radius: 8px;
-            border: 1px solid #e1e8ed;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-        .about-section h3 {
-            color: #0066cc;
-            font-size: 20px;
-            font-weight: 700;
-            margin-top: 0;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid #f0f3f7;
-            padding-bottom: 1rem;
-        }
-        .about-section p, .about-section ul {
-            color: #2c3e50;
-            font-size: 14px;
-            line-height: 1.8;
-        }
-        .about-section ul {
-            margin-left: 1.2rem;
-        }
-        .about-section li {
-            margin-bottom: 0.6rem;
-        }
-        .about-section strong {
-            color: #0066cc;
-            font-weight: 700;
+            text-align: center;
         }
         .stTextInput > div > div > input {
             background: #f8f9fb !important;
             border: 1px solid #e1e8ed !important;
             color: #2c3e50 !important;
             border-radius: 6px !important;
-            padding: 0.6rem 1rem !important;
+            padding: 0.8rem 1rem !important;
             font-size: 14px !important;
         }
         .stTextInput > div > div > input:focus {
-            border-color: #0066cc !important;
-            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1) !important;
+            border-color: #8B6F47 !important;
+            box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.1) !important;
+        }
+        .stTextArea textarea {
+            background: #f8f9fb !important;
+            border: 1px solid #e1e8ed !important;
+            color: #2c3e50 !important;
+            border-radius: 6px !important;
+            padding: 0.8rem 1rem !important;
+            font-size: 14px !important;
+        }
+        .stTextArea textarea:focus {
+            border-color: #8B6F47 !important;
+            box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.1) !important;
         }
         .stFormSubmitButton {
             width: 100%;
         }
+        .divider-text {
+            text-align: center;
+            color: #95a5a6;
+            font-size: 13px;
+            margin: 1.5rem 0;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
     </style>
     """, unsafe_allow_html=True)
     
-    # LANDING PAGE FOR UNAUTHENTICATED USERS
-    col_left, col_right = st.columns([1, 1], gap="large")
+    # CENTERED LOGIN PAGE
+    _, center_col, _ = st.columns([1, 1.2, 1])
     
-    with col_left:
-        st.markdown('<div class="about-section">', unsafe_allow_html=True)
-        st.markdown("### 🎯 About This Simulation")
-        st.markdown("""
-This is an **AI-powered courtroom simulation system** designed for legal education, 
-research, and analysis. It uses multiple AI agents working together to simulate a 
-realistic Indian legal case proceeding.
-
-**How it works:**
-- 📋 **Case Manager** analyzes and categorizes complaints
-- ⚖️ **Legal Researcher** identifies applicable laws and precedents
-- 👨‍⚖️ **Prosecutor & Defense** present arguments and evidence
-- 🔨 **Judge** evaluates facts and delivers a verdict
-- 📰 **Court Reporter** documents the proceedings
-- 💡 **Legal Consultant** provides strategic analysis
-
-**Use cases:**
-- Law school teaching and practice
-- Legal research and case analysis
-- Understanding Indian criminal law procedures
-- Exploring AI applications in judicial systems
-
-The simulation processes real complaints and generates comprehensive legal analysis
-with reasoning grounded in Indian jurisprudence.
-        """)
-        st.markdown('</div>', unsafe_allow_html=True)
-    
-    with col_right:
+    with center_col:
         # LOGIN FORM
         st.markdown('<div class="login-section">', unsafe_allow_html=True)
-        st.markdown("### 🔐 Login")
+        st.markdown("### Sign In")
+        
         with st.form("login_form"):
             username = st.text_input("Username", placeholder="Enter your username")
             password = st.text_input("Password", type="password", placeholder="Enter your password")
-            submit_login = st.form_submit_button("🔓 Login", use_container_width=True)
+            submit_login = st.form_submit_button("Sign In", use_container_width=True)
         
         if submit_login:
             if username and password:
                 if authenticate(username, password):
                     st.session_state.authenticated = True
                     st.session_state.username = username
-                    st.success("✅ Login successful! Redirecting...")
+                    st.success("Sign in successful. Redirecting...")
                     time.sleep(1)
                     st.rerun()
                 else:
-                    st.error("❌ Invalid credentials. Please try again.")
+                    st.error("Invalid credentials. Please try again.")
             else:
-                st.warning("⚠️ Please enter both username and password.")
+                st.warning("Please enter both username and password.")
         st.markdown('</div>', unsafe_allow_html=True)
         
+        # DIVIDER
+        st.markdown('<div class="divider-text">OR REQUEST ACCESS</div>', unsafe_allow_html=True)
+        
         # REQUEST ACCESS FORM
-        st.markdown('<div class="login-section" style="margin-top: 1.5rem;">', unsafe_allow_html=True)
-        st.markdown("### 📨 Request Access")
-        st.markdown("Don't have an account? Request access below:")
+        st.markdown('<div class="login-section">', unsafe_allow_html=True)
+        st.markdown("### Request Access")
         
         with st.form("access_request_form"):
-            email = st.text_input("Email address", placeholder="your.email@gmail.com")
+            email = st.text_input("Email address", placeholder="your.email@company.com")
             message = st.text_area(
-                "How will you use this simulation?",
-                placeholder="Tell us about your use case (research, teaching, etc.)",
-                height=100
+                "How will you use this platform?",
+                placeholder="Briefly describe your intended use case",
+                height=80
             )
-            submit_request = st.form_submit_button("📤 Send Request", use_container_width=True)
+            submit_request = st.form_submit_button("Submit Request", use_container_width=True)
         
         if submit_request:
             if email and message:
                 if submit_access_request(email, message):
-                    st.success("✅ Access request submitted! We'll review it soon.")
-                    st.info("💌 Check your email for updates.")
+                    st.success("Request submitted successfully.")
+                    st.info("Check your email for updates.")
                 else:
-                    st.error("❌ Error submitting request. Please try again.")
+                    st.error("Error submitting request. Please try again.")
             else:
-                st.warning("⚠️ Please fill in all fields.")
+                st.warning("Please fill in all fields.")
 
 else:
     # AUTHENTICATED USER - SHOW MAIN APP
     
     # Logout button in sidebar
     with st.sidebar:
-        if st.button("🚪 Logout", use_container_width=True):
+        if st.button("Sign Out", use_container_width=True):
             st.session_state.authenticated = False
             st.session_state.username = None
             st.session_state.clear()
-            st.success("✅ Logged out successfully!")
+            st.success("Signed out successfully.")
             time.sleep(1)
             st.rerun()
         st.markdown(f"**Logged in as:** {st.session_state.username}")
@@ -905,7 +877,7 @@ else:
     # ============================================
     # TABS & NAVIGATION
     # ============================================
-    tab_simulation, tab_metrics = st.tabs(["⚖️ Simulation", "📊 Metrics"])
+    tab_simulation, tab_metrics = st.tabs(["Simulation", "Metrics"])
 
 
     # ============================================
@@ -968,7 +940,7 @@ else:
                 with col_input2:
                     st.write("")
                     st.write("")
-                    if st.button("⚖️ Begin Simulation", type="primary", use_container_width=True):
+                    if st.button("Begin Simulation", type="primary", use_container_width=True):
                         # Use uploaded content if available, otherwise use manual input
                         current_complaint = st.session_state.get("uploaded_complaint") or st.session_state.get("complaint_input", "")
                         if not current_complaint.strip():
@@ -986,14 +958,14 @@ else:
         # STATUS INDICATOR
         # ============================================
         if st.session_state.case_state["is_running"]:
-            st.markdown('<div class="status-text"><span class="gold">⚖️</span> Court is in session... Arguments are being exchanged.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="status-text"><span class="gold">Court is in session. Arguments being exchanged.</span></div>', unsafe_allow_html=True)
             # DEBUG
             with st.expander("🔧 Debug Info"):
                 st.write(f"is_running: {st.session_state.case_state.get('is_running')}")
                 st.write(f"simulation_complete: {st.session_state.simulation_complete}")
                 st.write(f"stream_iter exists: {st.session_state.stream_iter is not None}")
         elif st.session_state.simulation_complete:
-            st.markdown('<div class="status-text"><span class="gold">✅</span> The Hon\'ble Judge has delivered the final verdict.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="status-text"><span class="gold">Verdict delivered. Simulation complete.</span></div>', unsafe_allow_html=True)
         else:
             st.markdown('<div class="status-text">🏛️ Enter a case brief and begin the simulation.</div>', unsafe_allow_html=True)
 
@@ -1223,7 +1195,7 @@ else:
                 pills = "".join(f'<span class="sections-pill">{esc(s)}</span>' for s in sections_applied_list)
                 st.markdown(f"""
                 <div class="verdict-reasoning">
-                    <span class="label">⚖️ Sections Applied</span>
+                    <span class="label">Sections Applied</span>
                     <div class="sections-pill-row">{pills}</div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -1510,7 +1482,7 @@ else:
                     use_container_width=True,
                 )
             with col_btn3:
-                if st.button("🔄 Start New Case", use_container_width=True):
+                if st.button("Start New Case", use_container_width=True):
                     st.session_state.case_state = dict(EMPTY_CASE_STATE)
                     st.session_state.simulation_complete = False
                     st.session_state.stream_iter = None
