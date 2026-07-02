@@ -41,11 +41,15 @@ After deployment, go to your app's settings:
 
 1. **Click** the three-dot menu (⋯) → **Settings**
 2. Scroll to **Secrets** section
-3. Paste the following (TOML format):
+3. Paste the following (TOML format) with YOUR actual keys:
 
 ```toml
-GROQ_API_KEY = "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"
-TAVILY_API_KEY = "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"
+# Get your actual keys from:
+# - GROQ: https://console.groq.com/keys
+# - TAVILY: https://tavily.com/api-keys
+
+GROQ_API_KEY = "your_groq_api_key_here"
+TAVILY_API_KEY = "your_tavily_api_key_here"
 ENVIRONMENT = "production"
 DEBUG = false
 ```
@@ -110,6 +114,7 @@ except:
 - Commit `.env` to Git (it's in `.gitignore`)
 - Share your `.env` file
 - Use the same keys across dev/staging/production
+- Paste real API keys in documentation files (use placeholders instead)
 
 ---
 
